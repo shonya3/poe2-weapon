@@ -1,0 +1,5 @@
+{
+	"scripts": {
+		"scrape": "bun scrape/src/main.ts"
+	}
+}

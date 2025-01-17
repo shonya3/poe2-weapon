@@ -3,9 +3,5 @@
 version = 4
 
 [[package]]
-name = "srape_weapons"
-version = "0.1.0"
-
-[[package]]
 name = "weapon"
 version = "0.1.0"
