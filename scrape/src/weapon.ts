@@ -1,7 +1,7 @@
 export type DamageType = 'phys' | 'fire' | 'cold' | 'lightning' | 'chaos';
 export type FlatDamage = {
 	damage_type: DamageType;
-	value: [number, number];
+	range: [number, number];
 };
 export type WeaponStats = {
 	base: string;

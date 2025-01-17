@@ -42,7 +42,7 @@ export async function scrap_page(weapon_type: WeaponType, page: Page): Promise<A
 					if (em.matches(selector)) {
 						return {
 							damage_type,
-							value: range as [number, number],
+							range: range as [number, number],
 						};
 					}
 				}
