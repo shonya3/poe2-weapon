@@ -1,0 +1,6 @@
+[package]
+name = "weapon"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]

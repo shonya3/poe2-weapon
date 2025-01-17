@@ -1,0 +1,6 @@
+[package]
+name = "srape_weapons"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
