@@ -1,160 +1,89 @@
-<script setup lang="ts">
-import { ref } from "vue";
-import { invoke } from "@tauri-apps/api/core";
-
-const greetMsg = ref("");
-const name = ref("");
-
-async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  greetMsg.value = await invoke("greet", { name: name.value });
-}
-</script>
-
 <template>
-  <main class="container">
-    <h1>Welcome to Tauri + Vue</h1>
+	<CustomTitleBar />
+	<h1>Hello App!</h1>
+	<p><strong>Current route path:</strong> {{ $route.fullPath }}</p>
+	<nav>
+		<RouterLink to="/">Go to Home</RouterLink>
+		<RouterLink to="/about">Go to About</RouterLink>
+	</nav>
+	<main>
+		<RouterView />
+	</main>
 
-    <div class="row">
-      <a href="https://vitejs.dev" target="_blank">
-        <img src="/vite.svg" class="logo vite" alt="Vite logo" />
-      </a>
-      <a href="https://tauri.app" target="_blank">
-        <img src="/tauri.svg" class="logo tauri" alt="Tauri logo" />
-      </a>
-      <a href="https://vuejs.org/" target="_blank">
-        <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-      </a>
-    </div>
-    <p>Click on the Tauri, Vite, and Vue logos to learn more.</p>
-
-    <form class="row" @submit.prevent="greet">
-      <input id="greet-input" v-model="name" placeholder="Enter a name..." />
-      <button type="submit">Greet</button>
-    </form>
-    <p>{{ greetMsg }}</p>
-  </main>
+	<div>
+		<button @click="() => webview?.show()">Show</button>
+		<button @click="() => webview?.hide()">Hide</button>
+	</div>
+	<button @click="inc">{{ counter }}</button>
+	<button @click="close_secondary_window">Close secondary window</button>
 </template>
 
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+<script setup lang="ts">
+import CustomTitleBar from './CustomTitleBar.vue';
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { onMounted, ref, shallowRef } from 'vue';
+const LABEL = 'TheUniqueLabel';
+const webview = shallowRef<WebviewWindow | null>(null);
+
+const counter = ref(0);
+
+function inc() {
+	counter.value += 1;
+	console.log(counter.value);
 }
 
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
+async function close_secondary_window() {
+	const window = await WebviewWindow.getByLabel(LABEL);
+	console.log(`Secondary window: `, window);
+	await window?.close();
 }
 
-</style>
-<style>
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+// window.addEventListener('keydown', async e => {
+// 	if (!(e.ctrlKey && e.key === 'c')) return;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+// 	try {
+// 		if (!(await custom_window_exists())) {
+// 			await create_webview();
+// 			await webview.value?.show();
+// 		}
+// 	} catch (err) {
+// 		console.log(err);
+// 	}
+// });
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+async function custom_window_exists(): Promise<boolean> {
+	return Boolean(await WebviewWindow.getByLabel(LABEL));
 }
 
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
+async function create_webview() {
+	try {
+		if (!(await WebviewWindow.getByLabel(LABEL))) {
+			webview.value = new WebviewWindow(LABEL, {
+				url: '/about',
+				width: 700,
+				height: 700,
+				x: 0,
+				y: 0,
+				alwaysOnTop: true,
+				visible: true,
+				decorations: false,
+			});
+			webview.value.once('tauri://created', function (e) {
+				// webview successfully created
+				// webview.value!.hide();
+				console.log('Webview created', e);
+			});
+			webview.value.once('tauri://error', function (e) {
+				// an error happened creating the webview
+				console.log(e);
+			});
+		}
+	} catch (err) {
+		console.log(err);
+	}
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
-}
-
-</style>
+onMounted(async () => {
+	// create_webview();
+});
+</script>
