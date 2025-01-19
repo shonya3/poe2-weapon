@@ -5,6 +5,7 @@ use bases::BASES;
 use serde::{Deserialize, Serialize};
 use weapon::{
     AttackSpeedModifier, DamageType, Explicits, FlatDamage, PhysModifier, Quality, Range, Rune,
+    Weapon,
 };
 
 pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
@@ -14,6 +15,25 @@ pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
     "Bows",
     "Crossbows",
 ];
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Parsed {
+    pub base: String,
+    pub explicits: Explicits,
+    pub runes: Vec<Rune>,
+    pub quality: Quality,
+}
+
+impl From<Parsed> for Weapon {
+    fn from(value: Parsed) -> Self {
+        Weapon {
+            base: value.base,
+            quality: value.quality,
+            explicits: value.explicits,
+            runes: value.runes,
+        }
+    }
+}
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -135,14 +155,6 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
         runes,
         quality,
     })
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Parsed {
-    pub base: String,
-    pub explicits: Explicits,
-    pub runes: Vec<Rune>,
-    pub quality: Quality,
 }
 
 fn try_parse_rune(line: &str) -> Option<Vec<Rune>> {
