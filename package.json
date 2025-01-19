@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"scrape": "bun scrape/src/main.ts",
+		"scrape": "node scrape/src/main.ts",
 		"app:dev": "cd app && bun tauri dev"
 	}
 }

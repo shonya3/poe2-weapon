@@ -1,4 +1,5 @@
 #![allow(unused)]
+pub mod bases;
 
 use serde::{Deserialize, Serialize};
 use weapon::{Explicit, FlatDamage, Quality, Rune};
