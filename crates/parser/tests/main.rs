@@ -2,8 +2,8 @@ use std::{fs, path::Path};
 
 use parser::Parsed;
 use serde::{Deserialize, Serialize};
-use weapon::Explicits;
 use weapon::{AttackSpeedModifier, DamageType, FlatDamage, PhysModifier, Quality, Range};
+use weapon::{Explicits, Rune};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Fixture {
@@ -40,43 +40,46 @@ fn print_yaml(fixture: &Fixture) {
 #[test]
 fn yaml() {
     let expected = Parsed {
-        base: "Leaden Greathammer".to_owned(),
+        base: "Expert Shortbow".to_owned(),
         explicits: Explicits {
             flats: vec![FlatDamage {
-                damage_type: DamageType::Fire,
-                range: Range(7, 16),
+                damage_type: DamageType::Physical,
+                range: Range(12, 18),
             }],
-            phys: Some(PhysModifier(107)),
-            atk_spd: Some(AttackSpeedModifier(9)),
+            phys: Some(PhysModifier(118)),
+            atk_spd: Some(AttackSpeedModifier(19)),
         },
-        runes: vec![],
+        runes: vec![Rune::Iron, Rune::Iron],
         quality: Quality(20),
     };
 
     print_yaml(&Fixture {
-        text: "Item Class: Two Hand Maces
+        text: "Item Class: Bows
 Rarity: Rare
-Plague Crusher
-Leaden Greathammer
+Woe Fletch
+Expert Shortbow
 --------
 Quality: +20% (augmented)
-Physical Damage: 144-194 (augmented)
-Fire Damage: 7-16 (augmented)
+Physical Damage: 164-291 (augmented)
 Critical Hit Chance: 5.00%
-Attacks per Second: 1.20 (augmented)
+Attacks per Second: 1.49 (augmented)
 --------
 Requirements:
-Level: 33
-Str: 76
+Level: 67
+Dex: 174
 --------
-Item Level: 33
+Sockets: S S
 --------
-107% increased Physical Damage
-Adds 7 to 16 Fire Damage
-+88 to Accuracy Rating
-+16% to Critical Damage Bonus
-9% increased Attack Speed
-10% increased Light Radius
+Item Level: 75
+--------
+40% increased Physical Damage (rune)
+--------
+118% increased Physical Damage
+Adds 12 to 18 Physical Damage
++133 to Accuracy Rating
++21% to Critical Damage Bonus
+19% increased Attack Speed
+Grants 4 Life per Enemy Hit
 "
         .to_owned(),
         expected,

@@ -1,0 +1,41 @@
+text: |
+    Item Class: Bows
+    Rarity: Rare
+    Woe Fletch
+    Expert Shortbow
+    --------
+    Quality: +20% (augmented)
+    Physical Damage: 164-291 (augmented)
+    Critical Hit Chance: 5.00%
+    Attacks per Second: 1.49 (augmented)
+    --------
+    Requirements:
+    Level: 67
+    Dex: 174
+    --------
+    Sockets: S S
+    --------
+    Item Level: 75
+    --------
+    40% increased Physical Damage (rune)
+    --------
+    118% increased Physical Damage
+    Adds 12 to 18 Physical Damage
+    +133 to Accuracy Rating
+    +21% to Critical Damage Bonus
+    19% increased Attack Speed
+    Grants 4 Life per Enemy Hit
+expected:
+    base: Expert Shortbow
+    explicits:
+        flats:
+            - damage_type: physical
+              range:
+                  - 12
+                  - 18
+        phys: 118
+        atk_spd: 19
+    runes:
+        - Iron
+        - Iron
+    quality: 20
