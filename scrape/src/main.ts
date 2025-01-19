@@ -16,6 +16,10 @@ async function main() {
 	await browser.close();
 
 	await write_bases_rs_into_parser_crate(results);
+	await node_fs_promises.writeFile(
+		node_path.resolve(import.meta.dirname, '../../crates/weapon/data/bases.json'),
+		JSON.stringify(results)
+	);
 }
 
 async function write_bases_rs_into_parser_crate(weapons: Array<WeaponStats>): Promise<void> {

@@ -1,7 +1,23 @@
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use std::ops::Add;
+use std::{ops::Add, path::PathBuf};
 
-pub mod bases;
+pub static WEAPON_STATS: Lazy<Vec<WeaponStats>> = Lazy::new(|| {
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is not set");
+    let json_path = PathBuf::from(manifest_dir).join("data/bases.json");
+    let file_content = std::fs::read_to_string(&json_path)
+        .unwrap_or_else(|_| panic!("Failed to read file: {:?}", json_path));
+    serde_json::from_str(&file_content)
+        .unwrap_or_else(|_| panic!("Failed to deserialize JSON from file: {:?}", json_path))
+});
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct WeaponStats {
+    pub base: String,
+    pub img: String,
+    pub damages: Vec<FlatDamage>,
+    pub aps: f32,
+}
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
@@ -113,12 +129,25 @@ pub struct Weapon {
 }
 
 impl Weapon {
-    pub fn base_aps(&self) -> f32 {
-        todo!()
+    pub fn get_all_weapons_stats() -> &'static Vec<WeaponStats> {
+        &WEAPON_STATS
     }
 
-    pub fn base_damage(&self) -> Vec<FlatDamage> {
-        todo!()
+    pub fn base_aps(&self) -> f32 {
+        Weapon::get_all_weapons_stats()
+            .iter()
+            .find(|stats| stats.base == self.base)
+            .unwrap()
+            .aps
+    }
+
+    pub fn base_damage(&self) -> &'static Vec<FlatDamage> {
+        Weapon::get_all_weapons_stats()
+            .iter()
+            .find(|stats| stats.base == self.base)
+            .unwrap()
+            .damages
+            .as_ref()
     }
 
     pub fn phys_dps(&self) -> f32 {
@@ -226,7 +255,7 @@ impl FlatDamage {
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub enum DamageType {
     #[default]
-    #[serde(rename = "physical")]
+    #[serde(rename = "physical", alias = "phys")]
     Physical,
     #[serde(rename = "fire")]
     Fire,
@@ -250,23 +279,19 @@ impl DamageType {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn phys_dps() {
-//         let white_weapon = Weapon {
-//             base_damage: vec![FlatDamage {
-//                 damage_type: DamageType::Physical,
-//                 range: Range(41, 76),
-//             }],
-//             quality: Quality(20),
-//             attack_speed: 1.25,
-//             explicits: Explicits::default(),
-//             runes: vec![],
-//         };
+    #[test]
+    fn phys_dps() {
+        let white_weapon = Weapon {
+            base: "Expert Shortbow".to_owned(),
+            quality: Quality(20),
+            explicits: Explicits::default(),
+            runes: vec![],
+        };
 
-//         assert!((87.75 - white_weapon.phys_dps()).abs() < 0.00001)
-//     }
-// }
+        assert!((87.75 - white_weapon.phys_dps()).abs() < 0.00001)
+    }
+}
