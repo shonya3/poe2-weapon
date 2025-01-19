@@ -20,6 +20,35 @@ impl Add for Range {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Rune {
     Iron,
+    Desert,
+    Glacial,
+    Storm,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum RuneMartialBonus {
+    Phys(PhysModifier),
+    Flat(FlatDamage),
+}
+
+impl Rune {
+    pub fn martial(&self) -> RuneMartialBonus {
+        match self {
+            Rune::Iron => RuneMartialBonus::Phys(PhysModifier(20)),
+            Rune::Desert => RuneMartialBonus::Flat(FlatDamage {
+                damage_type: DamageType::Fire,
+                range: Range(7, 11),
+            }),
+            Rune::Glacial => RuneMartialBonus::Flat(FlatDamage {
+                damage_type: DamageType::Cold,
+                range: Range(6, 10),
+            }),
+            Rune::Storm => RuneMartialBonus::Flat(FlatDamage {
+                damage_type: DamageType::Lightning,
+                range: Range(1, 20),
+            }),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Default, Deserialize, PartialEq)]

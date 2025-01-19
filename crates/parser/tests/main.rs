@@ -2,6 +2,7 @@ use std::{fs, path::Path};
 
 use parser::Parsed;
 use serde::{Deserialize, Serialize};
+#[allow(unused)]
 use weapon::{AttackSpeedModifier, DamageType, FlatDamage, PhysModifier, Quality, Range};
 use weapon::{Explicits, Rune};
 
