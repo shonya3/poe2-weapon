@@ -28,7 +28,7 @@ expected:
         - !Phys 107
         - !Flat
           damage_type: fire
-          value:
+          range:
               - 7
               - 16
         - !AtkSpd 9

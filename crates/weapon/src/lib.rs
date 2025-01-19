@@ -65,13 +65,13 @@ impl Weapon {
         );
 
         // let qual = 1.0 + self.quality.0 as f32 / 100.;
-        // let flat = (base_phys.value + flat_phys_explicit.value) as f32;
+        // let flat = (base_phys.range + flat_phys_explicit.range) as f32;
         // let percent = 1.0 + (phys_modifier_explicit.0 + runes_phys_modifier.0) as f32 / 100.;
 
         // println!("{qual} {flat} {percent}");
 
         (1.0 + self.quality.0 as f32 / 100.0)
-            * (base_phys.value + flat_phys_explicit.value) as f32
+            * (base_phys.range + flat_phys_explicit.range) as f32
             * (self.attack_speed * (1.0 + attack_speed_modifier.0 as f32 / 100.))
             * (1.0 + (phys_modifier_explicit.0 + runes_phys_modifier.0) as f32 / 100.)
             * 0.5
@@ -101,7 +101,7 @@ pub struct Quality(pub u8);
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub struct FlatDamage {
     pub damage_type: DamageType,
-    pub value: Range,
+    pub range: Range,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
@@ -128,7 +128,7 @@ mod tests {
         let white_weapon = Weapon {
             base_damage: vec![FlatDamage {
                 damage_type: DamageType::Physical,
-                value: Range(41, 76),
+                range: Range(41, 76),
             }],
             quality: Quality(20),
             attack_speed: 1.25,

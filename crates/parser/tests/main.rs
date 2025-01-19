@@ -41,32 +41,5 @@ impl Fixture {
 
 #[test]
 fn parser() {
-    let expected: Parsed = Parsed {
-        base: "Leaden Greathammer".to_owned(),
-        explicits: vec![
-            Explicit::Phys(PhysModifier(107)),
-            Explicit::Flat(FlatDamage {
-                damage_type: DamageType::Fire,
-                value: Range(7, 16),
-            }),
-            Explicit::AtkSpd(AttackSpeedModifier(9)),
-        ],
-        runes: vec![],
-        quality: Quality(20),
-    };
-
-    let fixture = Fixture {
-        clipboard_input: INPUT_1,
-        expected,
-    };
-
-    println!("{}", serde_yaml::to_string(&fixture).unwrap());
-
-    // let s = serde_json::to_string(&expected).unwrap();
-    // println!("{s}");
-
-    // let s = serde_yaml::to_string(&expected).unwrap();
-    // println!("{s}");
-
-    // assert_eq!()
+    //
 }
