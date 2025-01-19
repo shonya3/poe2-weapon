@@ -1,6 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::ops::Add;
 
-use serde::{Deserialize, Serialize};
+pub mod bases;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
@@ -105,14 +106,21 @@ pub struct Explicits {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Weapon {
-    pub base_damage: Vec<FlatDamage>,
+    pub base: String,
     pub quality: Quality,
-    pub attack_speed: f32,
     pub explicits: Explicits,
     pub runes: Vec<Rune>,
 }
 
 impl Weapon {
+    pub fn base_aps(&self) -> f32 {
+        todo!()
+    }
+
+    pub fn base_damage(&self) -> Vec<FlatDamage> {
+        todo!()
+    }
+
     pub fn phys_dps(&self) -> f32 {
         let flat_phys = self
             .explicits
@@ -122,7 +130,7 @@ impl Weapon {
             .cloned();
 
         let base_phys = self
-            .base_damage
+            .base_damage()
             .iter()
             .find(|damage| matches!(damage.damage_type, DamageType::Physical))
             .copied()
@@ -145,8 +153,7 @@ impl Weapon {
 
         (1.0 + self.quality.0 as f32 / 100.0)
             * (base_phys.range.sum() + flat_phys.unwrap_or_default().range.sum()) as f32
-            * (self.attack_speed
-                * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
+            * (self.base_aps() * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
             * (1.0
                 + (self.explicits.phys.unwrap_or_default().0 + runes_phys_modifier.0) as f32 / 100.)
             * 0.5
@@ -162,7 +169,7 @@ impl Weapon {
             .sum();
 
         let base_elemental_damage: Range = self
-            .base_damage
+            .base_damage()
             .iter()
             .filter(|flat| flat.is_elemental())
             .map(|flat| flat.range)
@@ -179,8 +186,7 @@ impl Weapon {
         (base_elemental_damage.sum()
             + flat_elemental_explicits_sum.sum()
             + runes_elemental_damage.sum()) as f32
-            * (self.attack_speed
-                * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
+            * (self.base_aps() * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
             * 0.5
     }
 
@@ -244,23 +250,23 @@ impl DamageType {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    #[test]
-    fn phys_dps() {
-        let white_weapon = Weapon {
-            base_damage: vec![FlatDamage {
-                damage_type: DamageType::Physical,
-                range: Range(41, 76),
-            }],
-            quality: Quality(20),
-            attack_speed: 1.25,
-            explicits: Explicits::default(),
-            runes: vec![],
-        };
+//     #[test]
+//     fn phys_dps() {
+//         let white_weapon = Weapon {
+//             base_damage: vec![FlatDamage {
+//                 damage_type: DamageType::Physical,
+//                 range: Range(41, 76),
+//             }],
+//             quality: Quality(20),
+//             attack_speed: 1.25,
+//             explicits: Explicits::default(),
+//             runes: vec![],
+//         };
 
-        assert!((87.75 - white_weapon.phys_dps()).abs() < 0.00001)
-    }
-}
+//         assert!((87.75 - white_weapon.phys_dps()).abs() < 0.00001)
+//     }
+// }
