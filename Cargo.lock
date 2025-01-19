@@ -67,6 +67,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "copypasta",
+ "parser",
  "rdev",
  "serde",
  "serde_json",

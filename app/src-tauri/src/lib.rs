@@ -47,7 +47,18 @@ pub fn run() {
 
                                 let mut clipboard = ClipboardContext::new().unwrap();
                                 match clipboard.get_contents() {
-                                    Ok(contents) => println!("{contents}"),
+                                    Ok(contents) => match parser::parse(&contents) {
+                                        Ok(parsed) => {
+                                            let weapon = parsed.into_weapon();
+                                            println!("{weapon:#?}");
+                                            println!(
+                                                "DPS: {}, PDPS: {}",
+                                                weapon.dps(),
+                                                weapon.phys_dps()
+                                            );
+                                        }
+                                        Err(err) => println!("ERROR parsing weapon text: {err:#?}"),
+                                    },
                                     Err(err) => eprintln!("{err}"),
                                 }
                             }
