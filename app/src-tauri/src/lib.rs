@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use copypasta::{ClipboardContext, ClipboardProvider};
 use rdev::{Event, EventType, Key};
 use std::{cell::Cell, time::Duration};

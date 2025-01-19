@@ -1,0 +1,12 @@
+[package]
+name = "parser"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { version = "1.0.217", features = ["derive"] }
+weapon = { path = "../weapon" }
+
+[dev-dependencies]
+serde_json = "1.0.136"
+serde_yaml = "0.9.34"
