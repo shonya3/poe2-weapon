@@ -25,12 +25,12 @@ text: |
 expected:
     base: Leaden Greathammer
     explicits:
-        - !Phys 107
-        - !Flat
-          damage_type: fire
-          range:
-              - 7
-              - 16
-        - !AtkSpd 9
+        flats:
+            - damage_type: fire
+              range:
+                  - 7
+                  - 16
+        phys: 107
+        atk_spd: 9
     runes: []
     quality: 20

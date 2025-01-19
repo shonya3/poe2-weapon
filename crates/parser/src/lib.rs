@@ -19,6 +19,121 @@ pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
 pub enum ParseError {
     ItemClassMissing,
     UnsupportedItemClass(String),
+    UnspoortedItemBase,
+}
+
+pub fn parse(text: &str) -> Result<Parsed, ParseError> {
+    let item_class = text
+        .lines()
+        .find(|s| s.contains("Item Class:"))
+        .and_then(|s| {
+            let (_, right) = s.split_once(": ")?;
+            Some(right.trim())
+        })
+        .ok_or(ParseError::ItemClassMissing)?;
+    if !SUPPORTED_ITEM_CLASSES.contains(&item_class) {
+        return Err(ParseError::UnsupportedItemClass(item_class.to_owned()));
+    }
+
+    let mut base: Option<String> = None;
+    let mut quality = Quality::default();
+    let mut phys: Option<PhysModifier> = None;
+    let mut atk_spd: Option<AttackSpeedModifier> = None;
+    let mut flats: Vec<FlatDamage> = vec![];
+
+    let mut item_level_line_met = false;
+    let mut lines = text.lines();
+
+    for line in &mut lines {
+        if base.is_none() && BASES.contains(&line) {
+            base = Some(line.to_owned());
+            continue;
+        }
+
+        if quality.0 != 0 {
+            break;
+        }
+        if line.starts_with("Item Level") {
+            item_level_line_met = true;
+            break;
+        }
+
+        if let Some(q) = try_parse_quality(line) {
+            quality = q;
+        }
+    }
+
+    let base = base.ok_or(ParseError::UnspoortedItemBase)?;
+
+    if !item_level_line_met {
+        for line in lines.skip_while(|s| !s.starts_with("Item Level")) {
+            if atk_spd.is_some() {
+                break;
+            }
+            if phys.is_none() {
+                if let Some(p) = try_parse_phys_modifier(line) {
+                    phys = Some(p);
+                }
+                continue;
+            }
+
+            if let Some(flat) = try_parse_flat_damage(line) {
+                flats.push(flat);
+                continue;
+            }
+
+            if let Some(aspd) = try_parse_attack_speed_modifier(line) {
+                atk_spd = Some(aspd)
+            }
+        }
+    } else {
+        for line in lines {
+            if atk_spd.is_some() {
+                break;
+            }
+            if phys.is_none() {
+                if let Some(p) = try_parse_phys_modifier(line) {
+                    phys = Some(p);
+                }
+                continue;
+            }
+
+            if let Some(flat) = try_parse_flat_damage(line) {
+                flats.push(flat);
+                continue;
+            }
+
+            if let Some(aspd) = try_parse_attack_speed_modifier(line) {
+                atk_spd = Some(aspd)
+            }
+        }
+    }
+
+    Ok(Parsed {
+        base,
+        explicits: Explicits {
+            flats,
+            phys,
+            atk_spd,
+        },
+        runes: vec![],
+        quality,
+    })
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Parsed {
+    pub base: String,
+    pub explicits: Explicits,
+    pub runes: Vec<Rune>,
+    pub quality: Quality,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Explicits {
+    pub flats: Vec<FlatDamage>,
+    pub phys: Option<PhysModifier>,
+    pub atk_spd: Option<AttackSpeedModifier>,
 }
 
 /// Try find Adds 7 to 16 Fire Damage
@@ -120,37 +235,6 @@ fn try_parse_quality(line: &str) -> Option<Quality> {
     })?;
 
     Some(Quality(value))
-}
-
-pub fn parse(text: &str) -> Result<Parsed, ParseError> {
-    let item_class = text
-        .lines()
-        .find(|s| s.contains("Item Class:"))
-        .and_then(|s| {
-            let (_, right) = s.split_once(": ")?;
-            Some(right.trim())
-        })
-        .ok_or(ParseError::ItemClassMissing)?;
-    if !SUPPORTED_ITEM_CLASSES.contains(&item_class) {
-        return Err(ParseError::UnsupportedItemClass(item_class.to_owned()));
-    }
-
-    let mut quality = Quality::default();
-    let mut attack_speed = AttackSpeedModifier::default();
-
-    for s in text.lines() {
-        //
-    }
-
-    todo!()
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Parsed {
-    pub base: String,
-    pub explicits: Vec<Explicit>,
-    pub runes: Vec<Rune>,
-    pub quality: Quality,
 }
 
 #[cfg(test)]
