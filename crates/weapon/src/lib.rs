@@ -22,31 +22,30 @@ pub enum Rune {
     Iron,
 }
 
+#[derive(Debug, Clone, Serialize, Default, Deserialize, PartialEq)]
+pub struct Explicits {
+    pub flats: Vec<FlatDamage>,
+    pub phys: Option<PhysModifier>,
+    pub atk_spd: Option<AttackSpeedModifier>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Weapon {
     pub base_damage: Vec<FlatDamage>,
     pub quality: Quality,
     pub attack_speed: f32,
-    pub explicits: Vec<Explicit>,
+    pub explicits: Explicits,
     pub runes: Vec<Rune>,
 }
 
 impl Weapon {
     pub fn phys_dps(&self) -> f32 {
-        let mut flat_phys_explicit = FlatDamage::default();
-        let mut phys_modifier_explicit = PhysModifier::default();
-        let mut attack_speed_modifier = AttackSpeedModifier::default();
-
-        self.explicits.iter().for_each(|explicit| match explicit {
-            Explicit::Flat(flat_damage) => {
-                if matches!(flat_damage.damage_type, DamageType::Physical) {
-                    flat_phys_explicit = *flat_damage
-                }
-            }
-            Explicit::Phys(phys) => phys_modifier_explicit = *phys,
-            Explicit::AtkSpd(attack_speed) => attack_speed_modifier = *attack_speed,
-            Explicit::Other(_) => {}
-        });
+        let flat_phys = self
+            .explicits
+            .flats
+            .iter()
+            .find(|flat| matches!(flat.damage_type, DamageType::Physical))
+            .cloned();
 
         let base_phys = self
             .base_damage
@@ -71,19 +70,13 @@ impl Weapon {
         // println!("{qual} {flat} {percent}");
 
         (1.0 + self.quality.0 as f32 / 100.0)
-            * (base_phys.range + flat_phys_explicit.range) as f32
-            * (self.attack_speed * (1.0 + attack_speed_modifier.0 as f32 / 100.))
-            * (1.0 + (phys_modifier_explicit.0 + runes_phys_modifier.0) as f32 / 100.)
+            * (base_phys.range + flat_phys.unwrap_or_default().range) as f32
+            * (self.attack_speed
+                * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
+            * (1.0
+                + (self.explicits.phys.unwrap_or_default().0 + runes_phys_modifier.0) as f32 / 100.)
             * 0.5
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum Explicit {
-    Flat(FlatDamage),
-    Phys(PhysModifier),
-    AtkSpd(AttackSpeedModifier),
-    Other(String),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
@@ -132,7 +125,7 @@ mod tests {
             }],
             quality: Quality(20),
             attack_speed: 1.25,
-            explicits: vec![],
+            explicits: Explicits::default(),
             runes: vec![],
         };
 

@@ -4,7 +4,7 @@ pub mod bases;
 use bases::BASES;
 use serde::{Deserialize, Serialize};
 use weapon::{
-    AttackSpeedModifier, DamageType, Explicit, FlatDamage, PhysModifier, Quality, Range, Rune,
+    AttackSpeedModifier, DamageType, Explicits, FlatDamage, PhysModifier, Quality, Range, Rune,
 };
 
 pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
@@ -127,13 +127,6 @@ pub struct Parsed {
     pub explicits: Explicits,
     pub runes: Vec<Rune>,
     pub quality: Quality,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Explicits {
-    pub flats: Vec<FlatDamage>,
-    pub phys: Option<PhysModifier>,
-    pub atk_spd: Option<AttackSpeedModifier>,
 }
 
 /// Try find Adds 7 to 16 Fire Damage

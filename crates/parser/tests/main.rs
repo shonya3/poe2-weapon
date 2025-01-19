@@ -1,9 +1,9 @@
 use std::{fs, path::Path};
 
-use parser::{Explicits, Parsed};
+use parser::Parsed;
 use serde::{Deserialize, Serialize};
-#[allow(unused)]
-use weapon::{AttackSpeedModifier, DamageType, Explicit, FlatDamage, PhysModifier, Quality, Range};
+use weapon::Explicits;
+use weapon::{AttackSpeedModifier, DamageType, FlatDamage, PhysModifier, Quality, Range};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Fixture {
