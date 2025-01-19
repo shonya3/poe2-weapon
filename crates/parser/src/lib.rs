@@ -1,10 +1,20 @@
 #![allow(unused)]
 pub mod bases;
 
+use bases::BASES;
 use serde::{Deserialize, Serialize};
 use weapon::{Explicit, FlatDamage, Quality, Rune};
 
-pub fn parse(clipboard_input: &str) -> Parsed {
+pub fn parse(text: &str) -> Parsed {
+    text.lines().take(5).find_map(|s| {
+        let s = s.trim();
+        if BASES.contains(&s) {
+            return Some(s.to_owned());
+        }
+
+        None
+    });
+
     todo!()
 }
 
