@@ -1,0 +1,30 @@
+text: |
+    Item Class: Quarterstaves
+    Rarity: Magic
+    Burning Crackling Quarterstaff of Dueling
+    --------
+    Elemental Damage: 18-37 (augmented), 13-54 (augmented)
+    Critical Hit Chance: 10.00%
+    Attacks per Second: 1.40
+    --------
+    Requirements:
+    Level: 20
+    Dex: 30
+    Int: 14
+    --------
+    Item Level: 29
+    --------
+    Adds 18 to 37 Fire Damage
+    +3 to Level of all Melee Skills
+expected:
+    base: Crackling Quarterstaff
+    explicits:
+        flats:
+            - damage_type: fire
+              range:
+                  - 18
+                  - 37
+        phys: null
+        atk_spd: null
+    runes: []
+    quality: 0

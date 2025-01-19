@@ -24,6 +24,12 @@ pub struct Parsed {
     pub quality: Quality,
 }
 
+impl Parsed {
+    pub fn into_weapon(self) -> Weapon {
+        self.into()
+    }
+}
+
 impl From<Parsed> for Weapon {
     fn from(value: Parsed) -> Self {
         Weapon {
@@ -65,9 +71,11 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
     let mut lines = text.lines();
 
     for line in &mut lines {
-        if base.is_none() && BASES.contains(&line) {
-            base = Some(line.to_owned());
-            continue;
+        if base.is_none() {
+            if let Some(b) = BASES.iter().rev().find(|b| line.contains(*b)) {
+                base = Some(b.to_string());
+                continue;
+            }
         }
 
         if quality.0 != 0 {
@@ -93,18 +101,16 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
             }
 
             if phys.is_none() {
-                println!("{line}");
                 // Runes come right before explicits. Phys is our first explicit.
                 if let Some(line_runes) = try_parse_rune(line) {
-                    println!("Here");
                     runes.extend(line_runes);
                     continue;
                 }
 
                 if let Some(p) = try_parse_phys_modifier(line) {
                     phys = Some(p);
+                    continue;
                 }
-                continue;
             }
 
             if let Some(flat) = try_parse_flat_damage(line) {
@@ -130,8 +136,8 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
 
                 if let Some(p) = try_parse_phys_modifier(line) {
                     phys = Some(p);
+                    continue;
                 }
-                continue;
             }
 
             if let Some(flat) = try_parse_flat_damage(line) {
