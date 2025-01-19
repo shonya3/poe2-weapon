@@ -85,6 +85,27 @@ fn try_parse_phys_modifier(line: &str) -> Option<PhysModifier> {
     None
 }
 
+fn try_parse_attack_speed_modifier(line: &str) -> Option<AttackSpeedModifier> {
+    let mut iter = line.split(" ");
+    let value = iter.next().and_then(|s| {
+        if !s.ends_with("%") {
+            return None;
+        }
+
+        s.replace("%", "").parse::<u8>().ok()
+    })?;
+
+    if iter.next() == Some("increased")
+        && iter.next() == Some("Attack")
+        && iter.next() == Some("Speed")
+        && iter.next().is_none()
+    {
+        return Some(AttackSpeedModifier(value));
+    }
+
+    None
+}
+
 fn try_parse_quality(line: &str) -> Option<Quality> {
     let mut iter = line.split(" ");
     if iter.next() != Some("Quality:") {
@@ -134,7 +155,7 @@ pub struct Parsed {
 
 #[cfg(test)]
 mod tests {
-    use weapon::{DamageType, FlatDamage, PhysModifier, Quality, Range};
+    use weapon::{AttackSpeedModifier, DamageType, FlatDamage, PhysModifier, Quality, Range};
 
     #[test]
     fn try_parse_flat_damage() {
@@ -161,5 +182,13 @@ mod tests {
             Some(Quality(20)),
             super::try_parse_quality("Quality: +20% (augmented)")
         )
+    }
+
+    #[test]
+    fn try_parse_attack_speed_modifier() {
+        assert_eq!(
+            Some(AttackSpeedModifier(9)),
+            super::try_parse_attack_speed_modifier("9% increased Attack Speed")
+        );
     }
 }
