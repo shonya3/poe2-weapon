@@ -17,21 +17,37 @@ impl Fixture {
     }
 }
 
-pub const S_S: &str = "Item Class: Two Hand Maces
-Rarity: Magic
-Temple Maul of the Thirsty
+pub const TEXT: &str = "Item Class: Bows
+Rarity: Unique
+Splinterheart
+Recurve Bow
 --------
-Physical Damage: 35-72
+Quality: +20% (augmented)
+Physical Damage: 34-71 (augmented)
+Fire Damage: 7-11 (augmented)
 Critical Hit Chance: 5.00%
-Attacks per Second: 1.20
+Attacks per Second: 1.10
 --------
 Requirements:
-Level: 28
-Str: 65
+Level: 16
+Dex: 38
 --------
-Item Level: 41
+Sockets: S S 
 --------
-Leeches 4.31% of Physical Damage as Mana";
+Item Level: 53
+--------
+20% increased Physical Damage (rune)
+Adds 7 to 11 Fire Damage (rune)
+--------
+71% increased Physical Damage
++58 to Accuracy Rating
+24% increased Projectile Speed
+Projectiles Split towards +2 targets
+--------
+The forests of the Vastiri held many secrets
+mystical and dark. Men learned not to wander,
+lest they return with a strange new purpose.
+";
 
 fn print_yaml(fixture: &Fixture) {
     println!("{}", serde_yaml::to_string(&fixture).unwrap());
@@ -40,47 +56,48 @@ fn print_yaml(fixture: &Fixture) {
 #[test]
 fn yaml() {
     let expected = Parsed {
-        base: "Expert Shortbow".to_owned(),
+        base: "Recurve Bow".to_owned(),
         explicits: Explicits {
-            flats: vec![FlatDamage {
-                damage_type: DamageType::Physical,
-                range: Range(12, 18),
-            }],
-            phys: Some(PhysModifier(118)),
-            atk_spd: Some(AttackSpeedModifier(19)),
+            flats: vec![],
+            phys: Some(PhysModifier(71)),
+            atk_spd: None,
         },
-        runes: vec![Rune::Iron, Rune::Iron],
+        runes: vec![Rune::Desert, Rune::Iron],
         quality: Quality(20),
     };
 
     print_yaml(&Fixture {
-        text: "Item Class: Bows
-Rarity: Rare
-Woe Fletch
-Expert Shortbow
+        text: r#"Item Class: Bows
+Rarity: Unique
+Splinterheart
+Recurve Bow
 --------
 Quality: +20% (augmented)
-Physical Damage: 164-291 (augmented)
+Physical Damage: 34-71 (augmented)
+Fire Damage: 7-11 (augmented)
 Critical Hit Chance: 5.00%
-Attacks per Second: 1.49 (augmented)
+Attacks per Second: 1.10
 --------
 Requirements:
-Level: 67
-Dex: 174
+Level: 16
+Dex: 38
 --------
-Sockets: S S
+Sockets: S S 
 --------
-Item Level: 75
+Item Level: 53
 --------
-40% increased Physical Damage (rune)
+20% increased Physical Damage (rune)
+Adds 7 to 11 Fire Damage (rune)
 --------
-118% increased Physical Damage
-Adds 12 to 18 Physical Damage
-+133 to Accuracy Rating
-+21% to Critical Damage Bonus
-19% increased Attack Speed
-Grants 4 Life per Enemy Hit
-"
+71% increased Physical Damage
++58 to Accuracy Rating
+24% increased Projectile Speed
+Projectiles Split towards +2 targets
+--------
+The forests of the Vastiri held many secrets
+mystical and dark. Men learned not to wander,
+lest they return with a strange new purpose.
+"#
         .to_owned(),
         expected,
     });

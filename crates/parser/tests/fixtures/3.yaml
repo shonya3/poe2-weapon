@@ -1,0 +1,40 @@
+text: |
+    Item Class: Bows
+    Rarity: Unique
+    Splinterheart
+    Recurve Bow
+    --------
+    Quality: +20% (augmented)
+    Physical Damage: 34-71 (augmented)
+    Fire Damage: 7-11 (augmented)
+    Critical Hit Chance: 5.00%\nAttacks per Second: 1.10
+    --------
+    Requirements:
+    Level: 16
+    Dex: 38
+    --------
+    Sockets: S S 
+    --------
+    Item Level: 53
+    --------
+    20% increased Physical Damage (rune)
+    Adds 7 to 11 Fire Damage (rune)
+    --------
+    71% increased Physical Damage
+    +58 to Accuracy Rating
+    24% increased Projectile Speed
+    Projectiles Split towards +2 targets
+    --------
+    The forests of the Vastiri held many secrets
+    mystical and dark. Men learned not to wander,
+    lest they return with a strange new purpose.
+expected:
+    base: Recurve Bow
+    explicits:
+        flats: []
+        phys: 71
+        atk_spd: null
+    runes:
+        - Desert
+        - Iron
+    quality: 20
