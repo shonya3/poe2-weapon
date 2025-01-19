@@ -45,7 +45,7 @@ impl From<Parsed> for Weapon {
 pub enum ParseError {
     ItemClassMissing,
     UnsupportedItemClass(String),
-    UnspoortedItemBase,
+    UnsupportedItemBase,
 }
 
 pub fn parse(text: &str) -> Result<Parsed, ParseError> {
@@ -91,7 +91,7 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
         }
     }
 
-    let base = base.ok_or(ParseError::UnspoortedItemBase)?;
+    let base = base.ok_or(ParseError::UnsupportedItemBase)?;
     let mut runes: Vec<Rune> = vec![];
 
     if !item_level_line_met {
