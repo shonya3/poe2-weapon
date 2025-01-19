@@ -9,11 +9,31 @@ pub fn add(left: u64, right: u64) -> u64 {
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub struct Range(pub u16, pub u16);
 
+impl Range {
+    /// sum min and max values.
+    pub fn sum(&self) -> u16 {
+        self.0 + self.1
+    }
+}
+
 impl Add for Range {
-    type Output = u16;
+    type Output = Range;
 
     fn add(self, rhs: Self) -> Self::Output {
-        self.0 + self.1 + rhs.0 + rhs.1
+        Range(self.0 + rhs.0, self.1 + rhs.1)
+    }
+}
+
+impl std::iter::Sum for Range {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        let mut summ = Range(0, 0);
+
+        for range in iter {
+            summ.0 += range.0;
+            summ.1 += range.1;
+        }
+
+        summ
     }
 }
 
@@ -124,12 +144,52 @@ impl Weapon {
         // println!("{qual} {flat} {percent}");
 
         (1.0 + self.quality.0 as f32 / 100.0)
-            * (base_phys.range + flat_phys.unwrap_or_default().range) as f32
+            * (base_phys.range.sum() + flat_phys.unwrap_or_default().range.sum()) as f32
             * (self.attack_speed
                 * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
             * (1.0
                 + (self.explicits.phys.unwrap_or_default().0 + runes_phys_modifier.0) as f32 / 100.)
             * 0.5
+    }
+
+    pub fn elemental_dps(&self) -> f32 {
+        let flat_elemental_explicits_sum: Range = self
+            .explicits
+            .flats
+            .iter()
+            .filter(|flat| flat.is_elemental())
+            .map(|flat| flat.range)
+            .sum();
+
+        let base_elemental_damage: Range = self
+            .base_damage
+            .iter()
+            .filter(|flat| flat.is_elemental())
+            .map(|flat| flat.range)
+            .sum();
+
+        let runes_elemental_damage: Range = self
+            .runes
+            .iter()
+            .filter_map(|rune| rune.flat_martial())
+            .filter(|flat| flat.is_elemental())
+            .map(|flat| flat.range)
+            .sum();
+
+        (base_elemental_damage.sum()
+            + flat_elemental_explicits_sum.sum()
+            + runes_elemental_damage.sum()) as f32
+            * (self.attack_speed
+                * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
+            * 0.5
+    }
+
+    pub fn chaos_dps() {
+        //
+    }
+
+    pub fn dps(&self) -> f32 {
+        self.phys_dps() + self.elemental_dps()
     }
 }
 
@@ -151,6 +211,12 @@ pub struct FlatDamage {
     pub range: Range,
 }
 
+impl FlatDamage {
+    pub fn is_elemental(&self) -> bool {
+        self.damage_type.is_elemental()
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub enum DamageType {
     #[default]
@@ -164,6 +230,18 @@ pub enum DamageType {
     Lightning,
     #[serde(rename = "chaos")]
     Chaos,
+}
+
+impl DamageType {
+    pub fn is_elemental(&self) -> bool {
+        match self {
+            DamageType::Physical => false,
+            DamageType::Fire => true,
+            DamageType::Cold => true,
+            DamageType::Lightning => true,
+            DamageType::Chaos => false,
+        }
+    }
 }
 
 #[cfg(test)]
