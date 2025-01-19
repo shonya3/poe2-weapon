@@ -54,7 +54,7 @@ impl std::iter::Sum for Range {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Rune {
     Iron,
     Desert,
@@ -69,6 +69,10 @@ pub enum RuneMartialBonus {
 }
 
 impl Rune {
+    pub fn runes() -> [Rune; 4] {
+        [Rune::Iron, Rune::Desert, Rune::Glacial, Rune::Storm]
+    }
+
     pub fn martial(&self) -> RuneMartialBonus {
         match self {
             Rune::Iron => RuneMartialBonus::Phys(PhysModifier(20)),
@@ -128,9 +132,50 @@ pub struct Weapon {
     pub runes: Vec<Rune>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DpsWithRunes {
+    pub runes: (Rune, Rune),
+    pub dps: f32,
+    pub pdps: f32,
+    pub edps: f32,
+}
+
 impl Weapon {
     pub fn get_all_weapons_stats() -> &'static Vec<WeaponStats> {
         &WEAPON_STATS
+    }
+
+    pub fn with_different_runes(&self) -> Vec<DpsWithRunes> {
+        let runes = Rune::runes();
+        let mut vec: Vec<DpsWithRunes> = vec![];
+
+        // Iterate over all pairs, including same rune pairs, but ensure order doesn't matter
+        for i in 0..runes.len() {
+            for j in i..runes.len() {
+                // Start j from i to avoid reverse pairs like (Storm, Iron)
+                let rune1 = runes[i];
+                let rune2 = runes[j];
+
+                let mut weapon_with_runes = self.clone();
+                weapon_with_runes.quality = Quality(20);
+                weapon_with_runes.runes = vec![rune1, rune2];
+
+                let pdps = weapon_with_runes.phys_dps();
+                let edps = weapon_with_runes.elemental_dps();
+                let dps = pdps + edps;
+
+                vec.push(DpsWithRunes {
+                    runes: (rune1, rune2),
+                    dps,
+                    pdps,
+                    edps,
+                });
+            }
+        }
+
+        vec.sort_by(|a, b| b.dps.partial_cmp(&a.dps).unwrap());
+
+        vec
     }
 
     pub fn base_aps(&self) -> f32 {

@@ -56,6 +56,8 @@ pub fn run() {
                                                 weapon.dps(),
                                                 weapon.phys_dps()
                                             );
+
+                                            println!("{:?}", weapon.with_different_runes());
                                         }
                                         Err(err) => println!("ERROR parsing weapon text: {err:#?}"),
                                     },
