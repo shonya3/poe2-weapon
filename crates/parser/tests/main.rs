@@ -17,6 +17,22 @@ impl Fixture {
     }
 }
 
+pub const S_S: &str = "Item Class: Two Hand Maces
+Rarity: Magic
+Temple Maul of the Thirsty
+--------
+Physical Damage: 35-72
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.20
+--------
+Requirements:
+Level: 28
+Str: 65
+--------
+Item Level: 41
+--------
+Leeches 4.31% of Physical Damage as Mana";
+
 #[test]
 fn parser() {
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();

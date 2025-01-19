@@ -74,8 +74,6 @@ fn try_parse_phys_modifier(line: &str) -> Option<PhysModifier> {
         s.replace("%", "").parse::<u16>().ok()
     })?;
 
-    println!("Here");
-
     if iter.next() == Some("increased")
         && iter.next() == Some("Physical")
         && iter.next() == Some("Damage")
@@ -85,6 +83,22 @@ fn try_parse_phys_modifier(line: &str) -> Option<PhysModifier> {
     }
 
     None
+}
+
+fn try_parse_quality(line: &str) -> Option<Quality> {
+    let mut iter = line.split(" ");
+    if iter.next() != Some("Quality:") {
+        return None;
+    }
+    let value = iter.next().and_then(|s| {
+        if !s.starts_with("+") || !s.ends_with("%") {
+            return None;
+        }
+
+        s.replace("+", "").replace("%", "").parse::<u8>().ok()
+    })?;
+
+    Some(Quality(value))
 }
 
 pub fn parse(text: &str) -> Result<Parsed, ParseError> {
@@ -120,7 +134,7 @@ pub struct Parsed {
 
 #[cfg(test)]
 mod tests {
-    use weapon::{DamageType, FlatDamage, PhysModifier, Range};
+    use weapon::{DamageType, FlatDamage, PhysModifier, Quality, Range};
 
     #[test]
     fn try_parse_flat_damage() {
@@ -139,5 +153,13 @@ mod tests {
             Some(PhysModifier(107)),
             super::try_parse_phys_modifier("107% increased Physical Damage")
         );
+    }
+
+    #[test]
+    fn try_parse_quality() {
+        assert_eq!(
+            Some(Quality(20)),
+            super::try_parse_quality("Quality: +20% (augmented)")
+        )
     }
 }
