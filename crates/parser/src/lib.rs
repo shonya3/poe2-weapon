@@ -53,24 +53,34 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
         if quality.0 != 0 {
             break;
         }
+        if let Some(q) = try_parse_quality(line) {
+            quality = q;
+        }
+
         if line.starts_with("Item Level") {
             item_level_line_met = true;
             break;
         }
-
-        if let Some(q) = try_parse_quality(line) {
-            quality = q;
-        }
     }
 
     let base = base.ok_or(ParseError::UnspoortedItemBase)?;
+    let mut runes: Vec<Rune> = vec![];
 
     if !item_level_line_met {
         for line in lines.skip_while(|s| !s.starts_with("Item Level")) {
             if atk_spd.is_some() {
                 break;
             }
+
             if phys.is_none() {
+                println!("{line}");
+                // Runes come right before explicits. Phys is our first explicit.
+                if let Some(line_runes) = try_parse_rune(line) {
+                    println!("Here");
+                    runes.extend(line_runes);
+                    continue;
+                }
+
                 if let Some(p) = try_parse_phys_modifier(line) {
                     phys = Some(p);
                 }
@@ -92,6 +102,12 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
                 break;
             }
             if phys.is_none() {
+                // Runes come right before explicits. Phys is our first explicit.
+                if let Some(line_runes) = try_parse_rune(line) {
+                    runes.extend(line_runes);
+                    continue;
+                }
+
                 if let Some(p) = try_parse_phys_modifier(line) {
                     phys = Some(p);
                 }
@@ -116,7 +132,7 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
             phys,
             atk_spd,
         },
-        runes: vec![],
+        runes,
         quality,
     })
 }
@@ -127,6 +143,35 @@ pub struct Parsed {
     pub explicits: Explicits,
     pub runes: Vec<Rune>,
     pub quality: Quality,
+}
+
+fn try_parse_rune(line: &str) -> Option<Vec<Rune>> {
+    let line = line.trim();
+    if !line.ends_with("(rune)") {
+        return None;
+    }
+    let line = line.replace("(rune)", "");
+    let line = line.trim();
+
+    if let Some(phys) = try_parse_phys_modifier(line) {
+        let length = (phys.0 as f32 / Rune::iron_rune_martial().0 as f32).ceil() as usize;
+        return Some(vec![Rune::Iron; length]);
+    }
+
+    if let Some(flat) = try_parse_flat_damage(line) {
+        let (rune, max) = match flat.damage_type {
+            DamageType::Physical => panic!("Never happens: No rune with flat phys"),
+            DamageType::Fire => (Rune::Desert, Rune::desert_rune_martial().range.1),
+            DamageType::Cold => (Rune::Glacial, Rune::glacial_rune_martial().range.1),
+            DamageType::Lightning => (Rune::Storm, Rune::storm_rune_martial().range.1),
+            DamageType::Chaos => panic!("Never happens: No rune with flat chaos"),
+        };
+
+        let length = (flat.range.1 as f32 / max as f32).ceil() as usize;
+        return Some(vec![rune; length]);
+    }
+
+    None
 }
 
 /// Try find Adds 7 to 16 Fire Damage
@@ -232,7 +277,7 @@ fn try_parse_quality(line: &str) -> Option<Quality> {
 
 #[cfg(test)]
 mod tests {
-    use weapon::{AttackSpeedModifier, DamageType, FlatDamage, PhysModifier, Quality, Range};
+    use weapon::{AttackSpeedModifier, DamageType, FlatDamage, PhysModifier, Quality, Range, Rune};
 
     #[test]
     fn try_parse_flat_damage() {
@@ -267,5 +312,13 @@ mod tests {
             Some(AttackSpeedModifier(9)),
             super::try_parse_attack_speed_modifier("9% increased Attack Speed")
         );
+    }
+
+    #[test]
+    fn try_parse_rune() {
+        assert_eq!(
+            Some(vec![Rune::Iron, Rune::Iron]),
+            super::try_parse_rune("40% increased Physical Damage (rune)")
+        )
     }
 }

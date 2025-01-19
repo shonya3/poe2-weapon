@@ -35,6 +35,6 @@ expected:
         phys: 71
         atk_spd: null
     runes:
-        - Desert
         - Iron
+        - Desert
     quality: 20

@@ -35,19 +35,44 @@ impl Rune {
     pub fn martial(&self) -> RuneMartialBonus {
         match self {
             Rune::Iron => RuneMartialBonus::Phys(PhysModifier(20)),
-            Rune::Desert => RuneMartialBonus::Flat(FlatDamage {
-                damage_type: DamageType::Fire,
-                range: Range(7, 11),
-            }),
-            Rune::Glacial => RuneMartialBonus::Flat(FlatDamage {
-                damage_type: DamageType::Cold,
-                range: Range(6, 10),
-            }),
-            Rune::Storm => RuneMartialBonus::Flat(FlatDamage {
-                damage_type: DamageType::Lightning,
-                range: Range(1, 20),
-            }),
+            Rune::Desert => RuneMartialBonus::Flat(Rune::desert_rune_martial()),
+            Rune::Glacial => RuneMartialBonus::Flat(Rune::glacial_rune_martial()),
+            Rune::Storm => RuneMartialBonus::Flat(Rune::storm_rune_martial()),
         }
+    }
+
+    pub fn flat_martial(&self) -> Option<FlatDamage> {
+        match self {
+            Rune::Iron => None,
+            Rune::Desert => Some(Rune::desert_rune_martial()),
+            Rune::Glacial => Some(Rune::glacial_rune_martial()),
+            Rune::Storm => Some(Rune::storm_rune_martial()),
+        }
+    }
+
+    pub fn desert_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Fire,
+            range: Range(7, 11),
+        }
+    }
+
+    pub fn glacial_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Cold,
+            range: Range(6, 10),
+        }
+    }
+
+    pub fn storm_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Lightning,
+            range: Range(1, 20),
+        }
+    }
+
+    pub fn iron_rune_martial() -> PhysModifier {
+        PhysModifier(20)
     }
 }
 
