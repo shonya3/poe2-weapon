@@ -294,4 +294,31 @@ mod tests {
 
         assert!((87.75 - white_weapon.phys_dps()).abs() < 0.00001)
     }
+
+    #[test]
+    fn dps() {
+        let weapon = Weapon {
+            base: "Expert Crackling Quarterstaff".to_owned(),
+            quality: Quality(20),
+            explicits: Explicits {
+                flats: vec![
+                    FlatDamage {
+                        damage_type: DamageType::Physical,
+                        range: Range(15, 28),
+                    },
+                    FlatDamage {
+                        damage_type: DamageType::Lightning,
+                        range: Range(3, 168),
+                    },
+                ],
+                phys: Some(PhysModifier(22)),
+                atk_spd: None,
+            },
+            runes: vec![],
+        };
+
+        assert_eq!(44.066406, weapon.phys_dps());
+        assert_eq!(270.19998, weapon.elemental_dps());
+        assert_eq!(314.2664, weapon.dps());
+    }
 }
