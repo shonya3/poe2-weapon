@@ -1,10 +1,12 @@
 use std::ops::Add;
 
+use serde::{Deserialize, Serialize};
+
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub struct Range(pub u16, pub u16);
 
 impl Add for Range {
@@ -15,11 +17,12 @@ impl Add for Range {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Rune {
     Iron,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Weapon {
     pub base_damage: Vec<FlatDamage>,
     pub quality: Quality,
@@ -35,13 +38,13 @@ impl Weapon {
         let mut attack_speed_modifier = AttackSpeedModifier::default();
 
         self.explicits.iter().for_each(|explicit| match explicit {
-            Explicit::FlatDamage(flat_damage) => {
+            Explicit::Flat(flat_damage) => {
                 if matches!(flat_damage.damage_type, DamageType::Physical) {
                     flat_phys_explicit = *flat_damage
                 }
             }
-            Explicit::PercentPhys(phys) => phys_modifier_explicit = *phys,
-            Explicit::AttackSpeed(attack_speed) => attack_speed_modifier = *attack_speed,
+            Explicit::Phys(phys) => phys_modifier_explicit = *phys,
+            Explicit::AtkSpd(attack_speed) => attack_speed_modifier = *attack_speed,
             Explicit::Other(_) => {}
         });
 
@@ -75,36 +78,44 @@ impl Weapon {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Explicit {
-    FlatDamage(FlatDamage),
-    PercentPhys(PhysModifier),
-    AttackSpeed(AttackSpeedModifier),
+    Flat(FlatDamage),
+    Phys(PhysModifier),
+    AtkSpd(AttackSpeedModifier),
     Other(String),
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct AttackSpeedModifier(pub u8);
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct PhysModifier(pub u16);
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct Quality(pub u8);
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub struct FlatDamage {
     pub damage_type: DamageType,
     pub value: Range,
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub enum DamageType {
     #[default]
+    #[serde(rename = "physical")]
     Physical,
+    #[serde(rename = "fire")]
     Fire,
+    #[serde(rename = "cold")]
     Cold,
+    #[serde(rename = "lightning")]
     Lightning,
+    #[serde(rename = "chaos")]
     Chaos,
 }
 
