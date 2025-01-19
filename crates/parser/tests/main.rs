@@ -13,7 +13,7 @@ pub struct Fixture {
 
 impl Fixture {
     pub fn assert(&self) {
-        assert_eq!(self.expected, parser::parse(&self.text))
+        assert_eq!(self.expected, parser::parse(&self.text).unwrap())
     }
 }
 
