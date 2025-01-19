@@ -63,6 +63,30 @@ fn try_parse_flat_damage(line: &str) -> Option<FlatDamage> {
     })
 }
 
+/// 107% increased Physical Damage
+fn try_parse_phys_modifier(line: &str) -> Option<PhysModifier> {
+    let mut iter = line.split(" ");
+    let value = iter.next().and_then(|s| {
+        if !s.ends_with("%") {
+            return None;
+        }
+
+        s.replace("%", "").parse::<u16>().ok()
+    })?;
+
+    println!("Here");
+
+    if iter.next() == Some("increased")
+        && iter.next() == Some("Physical")
+        && iter.next() == Some("Damage")
+        && iter.next().is_none()
+    {
+        return Some(PhysModifier(value));
+    }
+
+    None
+}
+
 pub fn parse(text: &str) -> Result<Parsed, ParseError> {
     let item_class = text
         .lines()
@@ -96,7 +120,7 @@ pub struct Parsed {
 
 #[cfg(test)]
 mod tests {
-    use weapon::{DamageType, FlatDamage, Range};
+    use weapon::{DamageType, FlatDamage, PhysModifier, Range};
 
     #[test]
     fn try_parse_flat_damage() {
@@ -107,5 +131,13 @@ mod tests {
             }),
             super::try_parse_flat_damage("Adds 7 to 16 Fire Damage")
         )
+    }
+
+    #[test]
+    fn try_parse_phys_modifier() {
+        assert_eq!(
+            Some(PhysModifier(107)),
+            super::try_parse_phys_modifier("107% increased Physical Damage")
+        );
     }
 }
