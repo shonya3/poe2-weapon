@@ -95,9 +95,12 @@ version = "0.1.0"
 dependencies = [
  "dioxus",
  "dioxus-logger",
+ "futures-core",
+ "futures-util",
  "js-sys",
  "serde",
  "serde-wasm-bindgen 0.6.5",
+ "tauri-wasm",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -4918,6 +4921,21 @@ dependencies = [
  "urlpattern",
  "uuid",
  "walkdir",
+]
+
+[[package]]
+name = "tauri-wasm"
+version = "0.1.0"
+source = "git+https://github.com/p1mo/tauri-wasm#3f62627e4192003d64a36d4845bb81be96799234"
+dependencies = [
+ "futures",
+ "js-sys",
+ "serde",
+ "serde-wasm-bindgen 0.6.5",
+ "serde_repr",
+ "thiserror 1.0.69",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
