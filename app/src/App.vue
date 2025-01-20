@@ -51,37 +51,37 @@ async function close_secondary_window() {
 // 	}
 // });
 
-async function custom_window_exists(): Promise<boolean> {
-	return Boolean(await WebviewWindow.getByLabel(LABEL));
-}
+// async function custom_window_exists(): Promise<boolean> {
+// 	return Boolean(await WebviewWindow.getByLabel(LABEL));
+// }
 
-async function create_webview() {
-	try {
-		if (!(await WebviewWindow.getByLabel(LABEL))) {
-			webview.value = new WebviewWindow(LABEL, {
-				url: '/about',
-				width: 700,
-				height: 700,
-				x: 0,
-				y: 0,
-				alwaysOnTop: true,
-				visible: true,
-				decorations: false,
-			});
-			webview.value.once('tauri://created', function (e) {
-				// webview successfully created
-				// webview.value!.hide();
-				console.log('Webview created', e);
-			});
-			webview.value.once('tauri://error', function (e) {
-				// an error happened creating the webview
-				console.log(e);
-			});
-		}
-	} catch (err) {
-		console.log(err);
-	}
-}
+// async function create_webview() {
+// 	try {
+// 		if (!(await WebviewWindow.getByLabel(LABEL))) {
+// 			webview.value = new WebviewWindow(LABEL, {
+// 				url: '/about',
+// 				width: 700,
+// 				height: 700,
+// 				x: 0,
+// 				y: 0,
+// 				alwaysOnTop: true,
+// 				visible: true,
+// 				decorations: false,
+// 			});
+// 			webview.value.once('tauri://created', function (e) {
+// 				// webview successfully created
+// 				// webview.value!.hide();
+// 				console.log('Webview created', e);
+// 			});
+// 			webview.value.once('tauri://error', function (e) {
+// 				// an error happened creating the webview
+// 				console.log(e);
+// 			});
+// 		}
+// 	} catch (err) {
+// 		console.log(err);
+// 	}
+// }
 
 onMounted(async () => {
 	// create_webview();

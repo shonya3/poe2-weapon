@@ -3,7 +3,10 @@
 use copypasta::{ClipboardContext, ClipboardProvider};
 use rdev::{Event, EventType, Key};
 use std::{cell::Cell, time::Duration};
-use tauri::Manager;
+use tauri::{
+    webview::PageLoadEvent, Emitter, Event as TauriEvent, Listener, Manager, WebviewWindowBuilder,
+};
+use tauri_plugin_opener::OpenerExt;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -23,20 +26,10 @@ pub fn run() {
             }
 
             let handle = app.handle().clone();
+
             std::thread::spawn(move || {
                 let ctrl_pressed = Cell::new(false);
                 if let Err(error) = rdev::grab(move |event| {
-                    // if event.event_type == EventType::KeyPress(Key::KeyD) {
-                    //     simulate_ctrl_c();
-                    //     std::thread::sleep(Duration::from_millis(20));
-
-                    //     let mut clipboard = ClipboardContext::new().unwrap();
-                    //     match clipboard.get_contents() {
-                    //         Ok(contents) => println!("{contents}"),
-                    //         Err(err) => eprintln!("{err}"),
-                    //     }
-                    // }
-
                     match event.event_type {
                         EventType::KeyPress(Key::ControlLeft) => {
                             ctrl_pressed.set(true);
@@ -57,7 +50,30 @@ pub fn run() {
                                                 weapon.phys_dps()
                                             );
 
-                                            println!("{:?}", weapon.with_different_runes());
+                                            let webview_window = tauri::WebviewWindowBuilder::new(
+                                                &handle,
+                                                "TheUniqueLabel",
+                                                tauri::WebviewUrl::App("/about".into()),
+                                            )
+                                            .always_on_top(true)
+                                            .on_page_load(|window, payload| match payload.event() {
+                                                PageLoadEvent::Started => {
+                                                    println!("{} finished loading", payload.url());
+                                                }
+                                                PageLoadEvent::Finished => {
+                                                    println!("{} finished loading", payload.url());
+                                                    window.emit("ready", ());
+                                                }
+                                            })
+                                            .build()
+                                            .unwrap();
+
+                                            // println!("{:?}", weapon.with_different_runes());
+
+                                            std::thread::sleep(Duration::from_millis(1));
+
+                                            // webview_window.listen("ready", move |_| {
+                                            // });
                                         }
                                         Err(err) => println!("ERROR parsing weapon text: {err:#?}"),
                                     },
@@ -72,15 +88,6 @@ pub fn run() {
                     }
 
                     Some(event)
-
-                    // callback(event, &ctrl_pressed, || {
-                    //     std::thread::sleep(Duration::from_millis(300));
-                    //     println!("We are here");
-                    //     let mud
-                    //     // .build()
-                    //     // .unwrap();
-                    //     // println!("{webview_window:?}");
-                    // })
                 }) {
                     println!("Error: {:?}", error)
                 }
