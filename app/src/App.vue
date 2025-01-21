@@ -1,21 +1,12 @@
 <template>
 	<CustomTitleBar />
-	<h1>Hello App!</h1>
-	<p><strong>Current route path:</strong> {{ $route.fullPath }}</p>
 	<nav>
-		<RouterLink to="/">Go to Home</RouterLink>
-		<RouterLink to="/about">Go to About</RouterLink>
+		<RouterLink to="/">Home </RouterLink>
+		<RouterLink to="/clipboard-flow">Clipboard Flow</RouterLink>
 	</nav>
 	<main>
 		<RouterView />
 	</main>
-
-	<div>
-		<button @click="() => webview?.show()">Show</button>
-		<button @click="() => webview?.hide()">Hide</button>
-	</div>
-	<button @click="inc">{{ counter }}</button>
-	<button @click="close_secondary_window">Close secondary window</button>
 </template>
 
 <script setup lang="ts">

@@ -20,11 +20,12 @@ onMounted(async () => {
 <style scoped>
 .titlebar {
 	height: 30px;
-	background: #329ea3;
+	/* background: #329ea3; */
+	background-color: transparent;
 	user-select: none;
 	display: flex;
 	justify-content: flex-end;
-	position: fixed;
+	position: sticky;
 	top: 0;
 	left: 0;
 	right: 0;

@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { invoke } from '@tauri-apps/api/core';
-import { emit, listen } from '@tauri-apps/api/event';
+import { listen } from '@tauri-apps/api/event';
 import { onMounted, shallowRef } from 'vue';
 
 const ready = shallowRef(false);
+const payload = shallowRef<object | null>(null);
 
 onMounted(() => {
-	listen('ready', () => {
+	listen<object>('clipboard_flow_data', p => {
 		ready.value = true;
+		payload.value = p;
 	});
 });
 </script>
 
 <template>
-	<h2>About</h2>
+	<h2>Overlay</h2>
 	Ready? {{ ready }}
+
+	<pre>{{ payload }}</pre>
 </template>
 
 <style scoped></style>

@@ -20,6 +20,9 @@ tauri-wasm = { git = "https://github.com/p1mo/tauri-wasm", features = [
 futures-core = "0.3.31"
 futures-util = "0.3.31"
 
+parser = { path = "../crates/parser" }
+weapon = { path = "../crates/weapon" }
+
 [profile]
 
 [profile.wasm-dev]

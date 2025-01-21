@@ -41,7 +41,7 @@ impl From<Parsed> for Weapon {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ParseError {
     ItemClassMissing,
     UnsupportedItemClass(String),
