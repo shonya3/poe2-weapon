@@ -2,14 +2,8 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::{ops::Add, path::PathBuf};
 
-pub static WEAPON_STATS: Lazy<Vec<WeaponStats>> = Lazy::new(|| {
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is not set");
-    let json_path = PathBuf::from(manifest_dir).join("data/bases.json");
-    let file_content = std::fs::read_to_string(&json_path)
-        .unwrap_or_else(|_| panic!("Failed to read file: {:?}", json_path));
-    serde_json::from_str(&file_content)
-        .unwrap_or_else(|_| panic!("Failed to deserialize JSON from file: {:?}", json_path))
-});
+pub static WEAPON_STATS: Lazy<Vec<WeaponStats>> =
+    Lazy::new(|| serde_json::from_str(include_str!("../data/bases.json")).unwrap());
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct WeaponStats {
