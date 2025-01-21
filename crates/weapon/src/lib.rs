@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use std::{ops::Add, path::PathBuf};
+use std::ops::Add;
 
 pub static WEAPON_STATS: Lazy<Vec<WeaponStats>> =
     Lazy::new(|| serde_json::from_str(include_str!("../data/bases.json")).unwrap());

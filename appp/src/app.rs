@@ -1,14 +1,10 @@
 #![allow(non_snake_case)]
 
-use std::{rc::Rc, thread::sleep, time::Duration};
-
 use dioxus::prelude::*;
-use futures_core::Stream;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use tauri_wasm::api::event::listen;
 use wasm_bindgen::prelude::*;
-use web_sys::console;
 
 #[wasm_bindgen]
 extern "C" {

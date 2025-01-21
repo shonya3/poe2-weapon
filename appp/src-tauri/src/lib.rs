@@ -18,10 +18,10 @@ pub fn run() {
         .setup(|app| {
             #[cfg(debug_assertions)]
             {
-                if let Some(window) = app.get_webview_window("main") {
-                    // window.open_devtools();
-                    // window.hide().unwrap();
-                };
+                // if let Some(window) = app.get_webview_window("main") {
+                // window.open_devtools();
+                // window.hide().unwrap();
+                // };
             }
 
             let handle = app.handle().clone();

@@ -3,7 +3,12 @@
 use copypasta::{ClipboardContext, ClipboardProvider};
 use parser::Parsed;
 use rdev::{Event, EventType, Key};
-use std::{cell::Cell, time::Duration};
+use serde::{Deserialize, Serialize};
+use std::{
+    cell::Cell,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use tauri::{
     webview::{PageLoadEvent, PageLoadPayload},
     AppHandle, Emitter, Event as TauriEvent, Listener, Manager, WebviewWindow,
@@ -29,16 +34,19 @@ pub fn run() {
             }
 
             let handle = app.handle().clone();
+            let clipboard = Arc::new(Mutex::new(ClipboardContext::new().unwrap()));
 
             std::thread::spawn(move || {
                 let ctrl_pressed = Cell::new(false);
-                let result = rdev::grab(move |event| {
+                let result = rdev::listen(move |event| {
                     callback(event, &ctrl_pressed, || {
-                        if let Err(err) = handle_ctrl_c_pressed(&handle) {
-                            handle.emit("clipboard_flow_error", format!("{err:?}"));
-                            println!("{err:?}");
-                        };
-                    })
+                        let handle = handle.clone();
+                        std::thread::spawn(move || {
+                            if let Err(err) = handle_ctrl_c_pressed(&handle) {
+                                println!("{err:#?}");
+                            };
+                        });
+                    });
                 });
 
                 if let Err(error) = result {
@@ -52,11 +60,7 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-fn callback<T: Fn()>(
-    event: Event,
-    ctrl_pressed: &Cell<bool>,
-    on_ctrl_c_pressed: T,
-) -> Option<Event> {
+fn callback<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c_pressed: T) {
     match event.event_type {
         EventType::KeyPress(Key::ControlLeft) => {
             ctrl_pressed.set(true);
@@ -71,9 +75,6 @@ fn callback<T: Fn()>(
         }
         _ => {}
     }
-
-    // Always return the event to ensure the system gets it
-    Some(event)
 }
 
 fn listen_keyboard<T: Fn()>(event: Event, key: Key, callback: T) -> Option<Event> {
@@ -102,24 +103,27 @@ pub enum ClipboardFlowError {
     Parse(parser::ParseError),
 }
 
-fn handle_ctrl_c_pressed(handle: &AppHandle) -> Result<(), ClipboardFlowError> {
-    let contents = blocking_get_updated_clipboard()?;
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ParsedElapsed {
+    pub elapsed: u128,
+    pub parsed: Parsed,
+}
 
-    println!("Clipboard: {contents}");
+fn handle_ctrl_c_pressed(handle: &AppHandle) -> Result<(), ClipboardFlowError> {
+    let (contents, elapsed) = blocking_get_updated_clipboard()?;
 
     let parsed = parser::parse(&contents).map_err(ClipboardFlowError::Parse)?;
-    let emit_processed_data = |window: &WebviewWindow, parsed: &Parsed| {
-        window.emit("clipboard_flow_data", &parsed).unwrap()
+    let emit_processed_data = |window: &WebviewWindow, parsed: &ParsedElapsed| {
+        window.emit("clipboard_flow_data", &parsed).unwrap();
     };
 
+    let parsedelapsed = ParsedElapsed { elapsed, parsed };
+
     match get_clipboard_window(handle) {
-        Some(window) => {
-            println!("Window exists. sending payload: {parsed:?}");
-            emit_processed_data(&window, &parsed)
-        }
+        Some(window) => emit_processed_data(&window, &parsedelapsed),
         None => {
             create_clipboard_window(handle, move |window, _payload| {
-                emit_processed_data(&window, &parsed)
+                emit_processed_data(&window, &parsedelapsed)
             });
         }
     }
@@ -138,16 +142,13 @@ fn create_clipboard_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sy
     )
     .always_on_top(true)
     .devtools(true)
-    .on_page_load(move |window, payload| {
-        window.open_devtools();
-        match payload.event() {
-            PageLoadEvent::Started => {
-                println!("{} finished loading", payload.url());
-            }
-            PageLoadEvent::Finished => {
-                println!("{} finished loading", payload.url());
-                on_page_load_finished(window, payload);
-            }
+    .on_page_load(move |window, payload| match payload.event() {
+        PageLoadEvent::Started => {
+            println!("{} finished loading", payload.url());
+        }
+        PageLoadEvent::Finished => {
+            println!("{} finished loading", payload.url());
+            on_page_load_finished(window, payload);
         }
     })
     .build()
@@ -158,28 +159,30 @@ fn get_clipboard_window(handle: &AppHandle) -> Option<WebviewWindow> {
     handle.get_webview_window("TheUniqueLabel")
 }
 
-fn blocking_get_updated_clipboard() -> Result<String, ClipboardFlowError> {
+fn blocking_get_updated_clipboard() -> Result<(String, u128), ClipboardFlowError> {
     use std::{thread, time::Duration};
+
+    let max_waiting_millis = 500;
+    let timeout = Duration::from_millis(max_waiting_millis);
+    let poll_interval = Duration::from_millis(1);
+    let start_time = std::time::Instant::now();
 
     let mut clipboard = ClipboardContext::new()
         .map_err(|err| ClipboardFlowError::CouldNotInitializeClipboardContext(err.to_string()))?;
-
-    let timeout = Duration::from_millis(500);
-    let poll_interval = Duration::from_millis(50);
-    let start_time = std::time::Instant::now();
-
-    let mut previous_contents = clipboard.get_contents().unwrap_or_default(); // Fallback to empty string if clipboard is empty or inaccessible
+    let previous_contents = clipboard
+        .get_contents()
+        .map_err(|err| ClipboardFlowError::CouldNotGetClipboardContents(err.to_string()))?;
 
     while start_time.elapsed() < timeout {
         if let Ok(current_contents) = clipboard.get_contents() {
             if current_contents != previous_contents {
                 println!("ELAPSED: {:?}", start_time.elapsed().as_millis());
-                return Ok(current_contents); // New content detected
+                return Ok((current_contents, start_time.elapsed().as_millis()));
             }
         }
 
-        thread::sleep(poll_interval); // Wait before polling again
+        thread::sleep(poll_interval);
     }
 
-    Ok(previous_contents)
+    Ok((previous_contents, max_waiting_millis as u128))
 }
