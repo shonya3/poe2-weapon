@@ -49,6 +49,12 @@ pub enum ParseError {
 }
 
 pub fn parse(text: &str) -> Result<Parsed, ParseError> {
+    let text = text
+        .lines()
+        .map(|line| line.trim().to_string())
+        .collect::<Vec<String>>()
+        .join("\n");
+
     let item_class = text
         .lines()
         .find(|s| s.contains("Item Class:"))
