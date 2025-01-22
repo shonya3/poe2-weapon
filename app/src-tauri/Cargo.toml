@@ -26,4 +26,4 @@ rdev = { version = "0.5.3", features = ["unstable_grab"] }
 copypasta = "0.10.1"
 # PoE2 copypasta weapons parser
 parser = { path = "../../crates/parser" }
-tokio = { version = "1.43.0", features = ["full"] }
+weapon = { path = "../../crates/weapon" }

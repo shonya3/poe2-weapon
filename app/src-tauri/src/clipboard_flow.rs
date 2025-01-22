@@ -1,5 +1,4 @@
 use copypasta::{ClipboardContext, ClipboardProvider};
-use parser::Parsed;
 use rdev::{Event, EventType, Key};
 use serde::{Deserialize, Serialize};
 use std::{cell::Cell, sync::Mutex};
@@ -7,6 +6,15 @@ use tauri::{
     webview::{PageLoadEvent, PageLoadPayload},
     AppHandle, Emitter, Listener, Manager, WebviewWindow,
 };
+use weapon::{DpsWithRunes, Weapon};
+
+pub type State = Mutex<Option<Data>>;
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Data {
+    pub weapon: Weapon,
+    pub elapsed: u128,
+    pub runes: Vec<DpsWithRunes>,
+}
 
 pub fn listen_global_ctrl_c(handle: AppHandle) {
     let ctrl_pressed = Cell::new(false);
@@ -37,13 +45,6 @@ pub enum Error {
 pub enum ClipboardError {
     CouldNotInitializeClipboardContext(String),
     CouldNotGetClipboardContents(String),
-}
-
-pub type State = Mutex<Option<Data>>;
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Data {
-    pub parsed: Parsed,
-    pub elapsed: u128,
 }
 
 impl Data {
@@ -120,6 +121,8 @@ fn blocking_get_updated_clipboard() -> Result<(String, u128), ClipboardError> {
                 if retries_remaining == 0 {
                     return Err(err);
                 }
+
+                std::thread::sleep(Duration::from_millis(3));
             }
         }
     }
@@ -128,15 +131,19 @@ fn blocking_get_updated_clipboard() -> Result<(String, u128), ClipboardError> {
 pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
     let (contents, elapsed) = blocking_get_updated_clipboard().map_err(Error::Clipboard)?;
 
-    let parsed = parser::parse(&contents).map_err(Error::Parse)?;
+    let weapon = parser::parse(&contents)
+        .map_err(Error::Parse)?
+        .into_weapon();
 
-    let lock_handle = handle.state::<State>();
+    let runes = weapon.with_different_runes();
+
     let data = Data {
-        parsed: parsed.clone(),
+        weapon,
         elapsed,
+        runes,
     };
 
-    *lock_handle.lock().unwrap() = Some(data.clone());
+    *handle.state::<State>().lock().unwrap() = Some(data.clone());
 
     match get_window(handle) {
         Some(window) => data.emit(&window),
