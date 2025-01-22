@@ -22,15 +22,25 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-struct ClipboardFlowState {
-    parsed: Option<ParsedElapsed>,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ClipboardFlowData {
+    parsed: Parsed,
+    elapsed: u128,
+}
+
+type ClipboardFlowState = Mutex<Option<ClipboardFlowData>>;
+
+impl ClipboardFlowData {
+    pub fn emit(&self, window: &WebviewWindow) {
+        window.emit("clipboard-flow-data", &self).unwrap()
+    }
 }
 
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
-        .manage(Mutex::new(ClipboardFlowState { parsed: None }))
+        .manage::<ClipboardFlowState>(Mutex::new(Option::<ClipboardFlowData>::None))
         .setup(|app| {
             let handle = app.handle().clone();
             let main_window = tauri::WebviewWindowBuilder::new(
@@ -58,12 +68,15 @@ pub fn run() {
             clipboard_flow_window.listen("clipboard-flow-ask-resend", move |_| {
                 if let Some(window) = get_clipboard_window(&handle) {
                     println!("Resending data");
-                    let state = handle
-                        .state::<Mutex<ClipboardFlowState>>()
+                    if let Some(data) = handle
+                        .state::<ClipboardFlowState>()
                         .inner()
                         .lock()
-                        .unwrap();
-                    window.emit("clipboard-flow-data", &state.parsed).unwrap();
+                        .unwrap()
+                        .as_ref()
+                    {
+                        data.emit(&window);
+                    }
                 }
             });
             clipboard_flow_window.close();
@@ -146,20 +159,21 @@ fn handle_ctrl_c_pressed(handle: &AppHandle) -> Result<(), ClipboardFlowError> {
     let (contents, elapsed) = blocking_get_updated_clipboard()?;
 
     let parsed = parser::parse(&contents).map_err(ClipboardFlowError::Parse)?;
-    let emit_processed_data = |window: &WebviewWindow, parsed: &ParsedElapsed| {
-        window.emit("clipboard-flow-data", &parsed).unwrap();
+
+    let lock_handle = handle.state::<ClipboardFlowState>();
+    let data = ClipboardFlowData {
+        parsed: parsed.clone(),
+        elapsed,
     };
 
-    let parsedelapsed = ParsedElapsed { elapsed, parsed };
-    let lock_handle = handle.state::<Mutex<ClipboardFlowState>>();
-    lock_handle.lock().unwrap().parsed = Some(parsedelapsed.clone());
+    *lock_handle.lock().unwrap() = Some(data.clone());
 
     let handle_clone = handle.clone();
     match get_clipboard_window(handle) {
-        Some(window) => emit_processed_data(&window, &parsedelapsed),
+        Some(window) => data.emit(&window),
         None => {
             create_clipboard_window(handle, move |window, _payload| {
-                emit_processed_data(&window, &parsedelapsed);
+                data.emit(&window);
             });
         }
     }
