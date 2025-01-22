@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import HomeView from './HomeView.vue';
-import ClipboardFlowView from './ClipboardFlowView.vue';
+import HomeView from './views/HomeView.vue';
+import ClipboardFlowView from './views/ClipboardFlowView.vue';
 
 const routes = [
 	{ path: '/', component: HomeView },

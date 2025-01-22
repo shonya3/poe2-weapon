@@ -6,12 +6,13 @@ use tauri::{
     webview::{PageLoadEvent, PageLoadPayload},
     AppHandle, Emitter, Listener, Manager, WebviewWindow,
 };
-use weapon::{DpsWithRunes, Weapon};
+use weapon::{Dps, DpsWithRunes, Weapon};
 
 pub type State = Mutex<Option<Data>>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Data {
     pub weapon: Weapon,
+    pub dps: Dps,
     pub elapsed: u128,
     pub runes: Vec<DpsWithRunes>,
 }
@@ -63,7 +64,7 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
         tauri::WebviewUrl::App("/clipboard-flow".into()),
     )
     .always_on_top(true)
-    .devtools(true)
+    .decorations(false)
     .on_page_load(move |window, payload| match payload.event() {
         PageLoadEvent::Started => {}
         PageLoadEvent::Finished => {
@@ -138,6 +139,7 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
     let runes = weapon.with_different_runes();
 
     let data = Data {
+        dps: weapon.dps(),
         weapon,
         elapsed,
         runes,

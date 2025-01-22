@@ -127,16 +127,29 @@ pub struct Weapon {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Dps {
+    pub total: f32,
+    pub edps: f32,
+    pub pdps: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DpsWithRunes {
     pub runes: (Rune, Rune),
-    pub dps: f32,
-    pub pdps: f32,
-    pub edps: f32,
+    pub dps: Dps,
 }
 
 impl Weapon {
     pub fn get_all_weapons_stats() -> &'static Vec<WeaponStats> {
         &WEAPON_STATS
+    }
+
+    pub fn dps(&self) -> Dps {
+        let pdps = self.phys_dps();
+        let edps = self.elemental_dps();
+        let total = pdps + edps;
+
+        Dps { total, edps, pdps }
     }
 
     pub fn with_different_runes(&self) -> Vec<DpsWithRunes> {
@@ -154,20 +167,14 @@ impl Weapon {
                 weapon_with_runes.quality = Quality(20);
                 weapon_with_runes.runes = vec![rune1, rune2];
 
-                let pdps = weapon_with_runes.phys_dps();
-                let edps = weapon_with_runes.elemental_dps();
-                let dps = pdps + edps;
-
                 vec.push(DpsWithRunes {
                     runes: (rune1, rune2),
-                    dps,
-                    pdps,
-                    edps,
+                    dps: weapon_with_runes.dps(),
                 });
             }
         }
 
-        vec.sort_by(|a, b| b.dps.partial_cmp(&a.dps).unwrap());
+        vec.sort_by(|a, b| b.dps.total.partial_cmp(&a.dps.total).unwrap());
 
         vec
     }
@@ -262,7 +269,7 @@ impl Weapon {
         //
     }
 
-    pub fn dps(&self) -> f32 {
+    pub fn total(&self) -> f32 {
         self.phys_dps() + self.elemental_dps()
     }
 }
@@ -358,6 +365,6 @@ mod tests {
 
         assert_eq!(44.066406, weapon.phys_dps());
         assert_eq!(270.19998, weapon.elemental_dps());
-        assert_eq!(314.2664, weapon.dps());
+        assert_eq!(314.2664, weapon.total());
     }
 }
