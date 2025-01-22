@@ -8,7 +8,7 @@ use tauri::{
     AppHandle, Emitter, Listener, Manager, WebviewWindow,
 };
 
-pub fn listen_ctrl_c(handle: AppHandle) {
+pub fn listen_global_ctrl_c(handle: AppHandle) {
     let ctrl_pressed = Cell::new(false);
     let result = rdev::listen(move |event| {
         listen_keyboard(event, &ctrl_pressed, || {
@@ -126,7 +126,7 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn attach_event_listeners(handle: &AppHandle) {
+pub fn attach_window_listeners(handle: &AppHandle) {
     let window = tauri::WebviewWindowBuilder::new(
         handle,
         "TheUniqueLabel",

@@ -10,8 +10,8 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle().clone();
 
-            clipboard_flow::attach_event_listeners(&handle);
-            std::thread::spawn(move || clipboard_flow::listen_ctrl_c(handle));
+            clipboard_flow::attach_window_listeners(&handle);
+            std::thread::spawn(move || clipboard_flow::listen_global_ctrl_c(handle));
 
             Ok(())
         })
