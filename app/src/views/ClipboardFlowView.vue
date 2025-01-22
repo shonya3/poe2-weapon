@@ -2,7 +2,8 @@
 import { listen, emit } from '@tauri-apps/api/event';
 import { onMounted, shallowRef } from 'vue';
 import { ClipboardFlowData } from '../types';
-import VRunesWithDps from '../components/VRunesWithDps.vue';
+import VRunesWithDps from '../components/VDpsWithRunes.vue';
+import { fmt } from '../formatter';
 
 const ready = shallowRef(false);
 const not_ready_message = shallowRef<null | 'yes'>(null);
@@ -31,11 +32,25 @@ onMounted(() => {
 		<pre>Asked for data resend: {{ not_ready_message ?? 'NOT SENT' }}</pre>
 	</div>
 	<div v-else>
-		{{ data.weapon.base }} <strong>{{ data.dps.total }}</strong>
+		{{ data.weapon.weapon.base }} <strong>{{ data.weapon.dps.total }}</strong>
 
 		<ul>
-			<li :key="runes_with_dps.runes.join('')" v-for="runes_with_dps in data.runes">
-				<VRunesWithDps :runes_with_dps="runes_with_dps" />
+			<li
+				:key="runes_with_dps.runes.join('')"
+				v-for="(runes_with_dps, index) in data.weapon.dps_with_different_runes"
+			>
+				<VRunesWithDps
+					:is_winner="index === 0"
+					:rune_size="index === 0 ? 65 : 40"
+					:show_runes_names="index === 0"
+					:runes_with_dps="runes_with_dps"
+				>
+					<template v-if="index === 0" v-slot:right
+						><div class="text-green-600 text-3xl pl-2">
+							+{{ fmt((runes_with_dps.dps.total / data.weapon.dps.total) * 100 - 100) }}%
+						</div></template
+					>
+				</VRunesWithDps>
 			</li>
 		</ul>
 	</div>

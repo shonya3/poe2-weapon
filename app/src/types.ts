@@ -26,14 +26,19 @@ export type Dps = {
 	edps: number;
 };
 
-export type RunesWithDps = {
+export type DpsWithRunes = {
 	runes: [Rune, Rune];
 	dps: Dps;
 };
 
 export type ClipboardFlowData = {
+	weapon: WeaponWithCalculatedRunes;
+	elapsed: number;
+	weapon_with_20qual?: WeaponWithCalculatedRunes;
+};
+
+export type WeaponWithCalculatedRunes = {
 	weapon: Weapon;
 	dps: Dps;
-	elapsed: number;
-	runes: Array<RunesWithDps>;
+	dps_with_different_runes: Array<DpsWithRunes>;
 };

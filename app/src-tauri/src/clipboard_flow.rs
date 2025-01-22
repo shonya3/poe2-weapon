@@ -11,10 +11,27 @@ use weapon::{Dps, DpsWithRunes, Weapon};
 pub type State = Mutex<Option<Data>>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Data {
+    pub weapon: WeaponWithCalculatedRunes,
+    pub elapsed: u128,
+    pub weapon_with_20qual: Option<WeaponWithCalculatedRunes>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WeaponWithCalculatedRunes {
     pub weapon: Weapon,
     pub dps: Dps,
-    pub elapsed: u128,
-    pub runes: Vec<DpsWithRunes>,
+    pub dps_with_different_runes: Vec<DpsWithRunes>,
+}
+
+impl WeaponWithCalculatedRunes {
+    pub fn new(weapon: Weapon) -> WeaponWithCalculatedRunes {
+        let dps_with_different_runes = weapon.with_different_runes();
+        let dps = weapon.dps();
+        WeaponWithCalculatedRunes {
+            weapon,
+            dps,
+            dps_with_different_runes,
+        }
+    }
 }
 
 pub fn listen_global_ctrl_c(handle: AppHandle) {
@@ -139,10 +156,16 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
     let runes = weapon.with_different_runes();
 
     let data = Data {
-        dps: weapon.dps(),
-        weapon,
+        weapon_with_20qual: match weapon.quality.0 == 20 {
+            true => None,
+            false => {
+                let mut weapon = weapon.clone();
+                weapon.quality.0 = 20;
+                Some(WeaponWithCalculatedRunes::new(weapon))
+            }
+        },
+        weapon: WeaponWithCalculatedRunes::new(weapon),
         elapsed,
-        runes,
     };
 
     *handle.state::<State>().lock().unwrap() = Some(data.clone());

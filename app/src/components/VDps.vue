@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { fmt } from '../formatter';
 import { Dps } from '../types';
 defineProps<{ dps: Dps }>();
 </script>
 
 <template>
-	<div>{{ dps.total }}</div>
+	<div>{{ fmt(dps.total) }}</div>
 </template>
 
 <style scoped></style>
