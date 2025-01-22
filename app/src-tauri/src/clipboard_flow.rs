@@ -8,6 +8,24 @@ use tauri::{
     AppHandle, Emitter, Listener, Manager, WebviewWindow,
 };
 
+pub fn listen_ctrl_c(handle: AppHandle) {
+    let ctrl_pressed = Cell::new(false);
+    let result = rdev::listen(move |event| {
+        listen_keyboard(event, &ctrl_pressed, || {
+            let handle = handle.clone();
+            std::thread::spawn(move || {
+                if let Err(err) = handle_ctrl_c(&handle) {
+                    println!("{err:#?}");
+                };
+            });
+        });
+    });
+
+    if let Err(error) = result {
+        println!("Error: {:?}", error)
+    };
+}
+
 #[derive(Debug)]
 #[allow(unused)]
 pub enum Error {
@@ -145,22 +163,4 @@ fn listen_keyboard<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c: 
         }
         _ => {}
     }
-}
-
-pub fn listen_ctrl_c(handle: AppHandle) {
-    let ctrl_pressed = Cell::new(false);
-    let result = rdev::listen(move |event| {
-        listen_keyboard(event, &ctrl_pressed, || {
-            let handle = handle.clone();
-            std::thread::spawn(move || {
-                if let Err(err) = handle_ctrl_c(&handle) {
-                    println!("{err:#?}");
-                };
-            });
-        });
-    });
-
-    if let Err(error) = result {
-        println!("Error: {:?}", error)
-    };
 }
