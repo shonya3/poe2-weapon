@@ -29,9 +29,14 @@ pub fn listen_global_ctrl_c(handle: AppHandle) {
 #[derive(Debug)]
 #[allow(unused)]
 pub enum Error {
+    Clipboard(ClipboardError),
+    Parse(parser::ParseError),
+}
+#[derive(Debug)]
+#[allow(unused)]
+pub enum ClipboardError {
     CouldNotInitializeClipboardContext(String),
     CouldNotGetClipboardContents(String),
-    Parse(parser::ParseError),
 }
 
 pub type State = Mutex<Option<Data>>;
@@ -73,19 +78,19 @@ pub fn get_window(handle: &AppHandle) -> Option<WebviewWindow> {
     handle.get_webview_window("TheUniqueLabel")
 }
 
-fn blocking_get_updated_clipboard() -> Result<(String, u128), Error> {
+fn blocking_get_updated_clipboard() -> Result<(String, u128), ClipboardError> {
     use std::{thread, time::Duration};
 
-    let max_waiting_millis = 500;
+    let max_waiting_millis = 50;
     let timeout = Duration::from_millis(max_waiting_millis);
     let poll_interval = Duration::from_millis(1);
     let start_time = std::time::Instant::now();
 
     let mut clipboard = ClipboardContext::new()
-        .map_err(|err| Error::CouldNotInitializeClipboardContext(err.to_string()))?;
+        .map_err(|err| ClipboardError::CouldNotInitializeClipboardContext(err.to_string()))?;
     let previous_contents = clipboard
         .get_contents()
-        .map_err(|err| Error::CouldNotGetClipboardContents(err.to_string()))?;
+        .map_err(|err| ClipboardError::CouldNotGetClipboardContents(err.to_string()))?;
 
     while start_time.elapsed() < timeout {
         if let Ok(current_contents) = clipboard.get_contents() {
@@ -102,7 +107,7 @@ fn blocking_get_updated_clipboard() -> Result<(String, u128), Error> {
 }
 
 pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
-    let (contents, elapsed) = blocking_get_updated_clipboard()?;
+    let (contents, elapsed) = blocking_get_updated_clipboard().map_err(Error::Clipboard)?;
 
     let parsed = parser::parse(&contents).map_err(Error::Parse)?;
 
