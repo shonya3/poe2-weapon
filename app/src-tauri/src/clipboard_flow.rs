@@ -81,29 +81,48 @@ pub fn get_window(handle: &AppHandle) -> Option<WebviewWindow> {
 fn blocking_get_updated_clipboard() -> Result<(String, u128), ClipboardError> {
     use std::{thread, time::Duration};
 
-    let max_waiting_millis = 50;
-    let timeout = Duration::from_millis(max_waiting_millis);
-    let poll_interval = Duration::from_millis(1);
-    let start_time = std::time::Instant::now();
+    let mut retries_remaining = 10;
 
-    let mut clipboard = ClipboardContext::new()
-        .map_err(|err| ClipboardError::CouldNotInitializeClipboardContext(err.to_string()))?;
-    let previous_contents = clipboard
-        .get_contents()
-        .map_err(|err| ClipboardError::CouldNotGetClipboardContents(err.to_string()))?;
+    let try_get_clipboard = || {
+        let max_waiting_millis = 50;
+        let timeout = Duration::from_millis(max_waiting_millis);
+        let poll_interval = Duration::from_millis(1);
+        let start_time = std::time::Instant::now();
 
-    while start_time.elapsed() < timeout {
-        if let Ok(current_contents) = clipboard.get_contents() {
-            if current_contents != previous_contents {
-                println!("ELAPSED: {:?}", start_time.elapsed().as_millis());
-                return Ok((current_contents, start_time.elapsed().as_millis()));
+        let mut clipboard = ClipboardContext::new()
+            .map_err(|err| ClipboardError::CouldNotInitializeClipboardContext(err.to_string()))?;
+        let previous_contents = clipboard
+            .get_contents()
+            .map_err(|err| ClipboardError::CouldNotGetClipboardContents(err.to_string()))?;
+
+        while start_time.elapsed() < timeout {
+            if let Ok(current_contents) = clipboard.get_contents() {
+                if current_contents != previous_contents {
+                    println!("ELAPSED: {:?}", start_time.elapsed().as_millis());
+                    return Ok((current_contents, start_time.elapsed().as_millis()));
+                }
             }
+
+            thread::sleep(poll_interval);
         }
 
-        thread::sleep(poll_interval);
-    }
+        Ok((previous_contents, max_waiting_millis as u128))
+    };
 
-    Ok((previous_contents, max_waiting_millis as u128))
+    loop {
+        retries_remaining -= 1;
+
+        match try_get_clipboard() {
+            Ok(ok) => return Ok(ok),
+            Err(err) => {
+                println!("Clipboard error: {err:?}");
+
+                if retries_remaining == 0 {
+                    return Err(err);
+                }
+            }
+        }
+    }
 }
 
 pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
