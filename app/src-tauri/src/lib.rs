@@ -22,7 +22,7 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-struct ClipboardState {
+struct ClipboardFlowState {
     parsed: Option<ParsedElapsed>,
 }
 
@@ -30,7 +30,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
-        .manage(Mutex::new(ClipboardState { parsed: None }))
+        .manage(Mutex::new(ClipboardFlowState { parsed: None }))
         .setup(|app| {
             let handle = app.handle().clone();
             let main_window = tauri::WebviewWindowBuilder::new(
@@ -59,7 +59,7 @@ pub fn run() {
                 if let Some(window) = get_clipboard_window(&handle) {
                     println!("Resending data");
                     let state = handle
-                        .state::<Mutex<ClipboardState>>()
+                        .state::<Mutex<ClipboardFlowState>>()
                         .inner()
                         .lock()
                         .unwrap();
@@ -151,7 +151,7 @@ fn handle_ctrl_c_pressed(handle: &AppHandle) -> Result<(), ClipboardFlowError> {
     };
 
     let parsedelapsed = ParsedElapsed { elapsed, parsed };
-    let lock_handle = handle.state::<Mutex<ClipboardState>>();
+    let lock_handle = handle.state::<Mutex<ClipboardFlowState>>();
     lock_handle.lock().unwrap().parsed = Some(parsedelapsed.clone());
 
     let handle_clone = handle.clone();
