@@ -1,26 +1,12 @@
-#![allow(unused)]
-
 use copypasta::{ClipboardContext, ClipboardProvider};
 use parser::Parsed;
 use rdev::{Event, EventType, Key};
 use serde::{Deserialize, Serialize};
-use std::{
-    cell::Cell,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
+use std::{cell::Cell, sync::Mutex};
 use tauri::{
     webview::{PageLoadEvent, PageLoadPayload},
-    AppHandle, Emitter, Event as TauriEvent, Listener, Manager, WebviewWindow,
-    WebviewWindowBuilder,
+    AppHandle, Emitter, Listener, Manager, WebviewWindow,
 };
-use tauri_plugin_opener::OpenerExt;
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ClipboardFlowData {
@@ -39,7 +25,7 @@ impl ClipboardFlowData {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![])
         .manage::<ClipboardFlowState>(Mutex::new(Option::<ClipboardFlowData>::None))
         .setup(|app| {
             let handle = app.handle().clone();
@@ -79,7 +65,7 @@ pub fn run() {
                     }
                 }
             });
-            clipboard_flow_window.close();
+            clipboard_flow_window.close().unwrap();
 
             let handle = app.handle().clone();
             std::thread::spawn(move || {
@@ -123,25 +109,6 @@ fn callback<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c_pressed:
     }
 }
 
-fn listen_keyboard<T: Fn()>(event: Event, key: Key, callback: T) -> Option<Event> {
-    if event.event_type == EventType::KeyPress(key) {
-        callback();
-    }
-
-    Some(event)
-}
-
-fn simulate_ctrl_c() {
-    rdev::simulate(&EventType::KeyPress(Key::ControlLeft)).unwrap();
-    std::thread::sleep(Duration::from_millis(2)); // Short delay
-    rdev::simulate(&EventType::KeyPress(Key::KeyC)).unwrap();
-    std::thread::sleep(Duration::from_millis(2));
-
-    rdev::simulate(&EventType::KeyRelease(Key::KeyC)).unwrap();
-    std::thread::sleep(Duration::from_millis(2)); // Short delay
-    rdev::simulate(&EventType::KeyRelease(Key::ControlLeft)).unwrap();
-}
-
 #[derive(Debug)]
 pub enum ClipboardFlowError {
     CouldNotInitializeClipboardContext(String),
@@ -168,7 +135,6 @@ fn handle_ctrl_c_pressed(handle: &AppHandle) -> Result<(), ClipboardFlowError> {
 
     *lock_handle.lock().unwrap() = Some(data.clone());
 
-    let handle_clone = handle.clone();
     match get_clipboard_window(handle) {
         Some(window) => data.emit(&window),
         None => {
