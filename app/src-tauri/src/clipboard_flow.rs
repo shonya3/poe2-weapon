@@ -14,7 +14,7 @@ pub type State = Mutex<Option<Data>>;
 pub struct Data {
     pub weapon: WeaponWithCalculatedRunes,
     pub elapsed: u128,
-    pub weapon_with_20qual: Option<WeaponWithCalculatedRunes>,
+    pub weapon_q20: Option<WeaponWithCalculatedRunes>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WeaponWithCalculatedRunes {
@@ -99,6 +99,7 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
     )
     .always_on_top(true)
     .decorations(false)
+    .inner_size(400.0, 600.0)
     .on_page_load(move |window, payload| match payload.event() {
         PageLoadEvent::Started => {}
         PageLoadEvent::Finished => {
@@ -108,7 +109,12 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
     });
 
     if let Ok(pos) = get_mouse_position() {
-        builder = builder.position(pos.0 as f64, pos.1 as f64);
+        let x = match pos.0 > 400 {
+            true => pos.0 - 200,
+            false => 0,
+        };
+        let y = pos.1 + 80;
+        builder = builder.position(x as f64, y as f64);
     }
 
     builder.build().unwrap()
@@ -175,7 +181,7 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
         .into_weapon();
 
     let data = Data {
-        weapon_with_20qual: match weapon.quality.0 == 20 {
+        weapon_q20: match weapon.quality.0 == 20 {
             true => None,
             false => {
                 let mut weapon = weapon.clone();

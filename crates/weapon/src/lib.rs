@@ -164,7 +164,6 @@ impl Weapon {
                 let rune2 = runes[j];
 
                 let mut weapon_with_runes = self.clone();
-                weapon_with_runes.quality = Quality(20);
                 weapon_with_runes.runes = vec![rune1, rune2];
 
                 vec.push(DpsWithRunes {

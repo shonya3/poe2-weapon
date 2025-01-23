@@ -1,13 +1,27 @@
 <script setup lang="ts">
 import { listen, emit } from '@tauri-apps/api/event';
-import { onMounted, shallowRef } from 'vue';
-import { ClipboardFlowData } from '../types';
+import { computed, onMounted, ref } from 'vue';
+import { ClipboardFlowData, DpsWithRunes } from '../types';
 import VRunesWithDps from '../components/VDpsWithRunes.vue';
+import VDps from '../components/VDps.vue';
 import { fmt } from '../formatter';
 
-const ready = shallowRef(false);
-const not_ready_message = shallowRef<null | 'yes'>(null);
-const data = shallowRef<ClipboardFlowData | null>(null);
+const ready = ref(false);
+const not_ready_message = ref<null | 'yes'>(null);
+const data = ref<ClipboardFlowData | null>(null);
+const apply_quality = ref(true);
+
+const runes_dps = computed<DpsWithRunes[]>(() => {
+	if (!data.value) {
+		return [];
+	}
+
+	if (apply_quality.value && data.value.weapon_q20) {
+		return data.value.weapon_q20.dps_with_different_runes;
+	}
+
+	return data.value.weapon.dps_with_different_runes;
+});
 
 listen<ClipboardFlowData>('clipboard-flow-data', ({ payload }) => {
 	ready.value = true;
@@ -25,38 +39,52 @@ onMounted(() => {
 </script>
 
 <template>
-	<h2>Overlay</h2>
-
 	<div v-if="!data">
 		<p>Data is not ready</p>
 		<pre>Asked for data resend: {{ not_ready_message ?? 'NOT SENT' }}</pre>
 	</div>
 	<div v-else>
-		<div>
-			{{ data.weapon.weapon.base }}
-			<span class="pr-2" v-if="data.weapon.weapon.quality">+{{ data.weapon.weapon.quality }}%</span>
-			<strong>{{ data.weapon.dps.total }}</strong>
+		<div class="flex pt-4 pb-4 items-center justify-between">
+			<div>
+				<span class="text-2xl text-stone-700">
+					{{ data.weapon.weapon.base }}
+				</span>
+				<div class="text-stone-500 text-base leading-5 flex gap-2">
+					<div class="flex gap-1">dps: <VDps class="text-stone-700" :dps="data.weapon.dps" /></div>
+					<div>
+						quality: <span class="text-stone-600">{{ data.weapon.weapon.quality }}</span>
+					</div>
+				</div>
+			</div>
 		</div>
 
-		<VRunesWithDps
-			:is_winner="true"
-			:rune_size="65"
-			:show_runes_names="true"
-			:runes_with_dps="data.weapon.dps_with_different_runes[0]"
-		>
+		<div v-if="data.weapon_q20 && data.weapon.weapon.quality < 20" class="place-items-end ml-auto">
+			<div class="flex items-center gap-1 text-xs text-stone-600">
+				<label for="apply-quality">Apply 20% quality</label>
+				<input
+					class="accent-stone-600"
+					@change="e => apply_quality =  (e.target as HTMLInputElement).checked"
+					:checked="apply_quality"
+					type="checkbox"
+					id="apply-quality"
+				/>
+			</div>
+		</div>
+		<VRunesWithDps :is_winner="true" :rune_size="65" :show_runes_names="true" :runes_with_dps="runes_dps[0]">
 			<template v-slot:right
-				><div class="text-green-600 text-3xl pl-2">
-					+{{ fmt((data.weapon.dps_with_different_runes[0].dps.total / data.weapon.dps.total) * 100 - 100) }}%
+				><div class="text-emerald-600 text-3xl pl-1">
+					+{{ fmt((runes_dps[0].dps.total / data.weapon.dps.total) * 100 - 100) }}%
 				</div></template
 			>
 		</VRunesWithDps>
 
-		<details>
+		<details class="text-stone-600 pt-8">
 			<summary>Other runes</summary>
-			<ul>
+			<ul class="flex flex-wrap gap-x-10 pt-3">
 				<li
+					class="basis-[120px]"
 					:key="runes_with_dps.runes.join('')"
-					v-for="runes_with_dps in data.weapon.dps_with_different_runes.slice(1)"
+					v-for="runes_with_dps in runes_dps.slice(1)"
 				>
 					<VRunesWithDps :runes_with_dps="runes_with_dps" />
 				</li>

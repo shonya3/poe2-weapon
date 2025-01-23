@@ -1,9 +1,11 @@
 <template>
-	<CustomTitleBar />
+	<div class="w-full min-h-lvh bg-stone-200">
+		<CustomTitleBar />
 
-	<main>
-		<RouterView />
-	</main>
+		<main class="px-4">
+			<RouterView />
+		</main>
+	</div>
 </template>
 
 <script setup lang="ts">

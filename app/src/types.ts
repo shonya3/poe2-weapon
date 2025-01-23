@@ -34,7 +34,7 @@ export type DpsWithRunes = {
 export type ClipboardFlowData = {
 	weapon: WeaponWithCalculatedRunes;
 	elapsed: number;
-	weapon_with_20qual?: WeaponWithCalculatedRunes;
+	weapon_q20?: WeaponWithCalculatedRunes;
 };
 
 export type WeaponWithCalculatedRunes = {
