@@ -39,7 +39,4 @@ onMounted(async () => {
 	user-select: none;
 	-webkit-user-select: none;
 }
-.titlebar-button:hover {
-	/* background: ; */
-}
 </style>
