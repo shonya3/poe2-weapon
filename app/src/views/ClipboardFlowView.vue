@@ -10,6 +10,13 @@ const ready = ref(false);
 const not_ready_message = ref<null | 'yes'>(null);
 const data = ref<ClipboardFlowData | null>(null);
 const apply_quality = ref(true);
+const dps_gain_percents = computed(() => {
+	if (!data.value || !runes_dps.value[0]) {
+		return 0;
+	}
+
+	return (runes_dps.value[0].dps.total / data.value.weapon.dps.total) * 100 - 100;
+});
 
 const runes_dps = computed<DpsWithRunes[]>(() => {
 	if (!data.value) {
@@ -71,7 +78,7 @@ onMounted(() => {
 			</div>
 		</div>
 		<VRunesWithDps :is_winner="true" :rune_size="65" :show_runes_names="true" :runes_with_dps="runes_dps[0]">
-			<template v-slot:right
+			<template v-if="dps_gain_percents > 0" v-slot:right
 				><div class="text-emerald-600 text-3xl pl-1">
 					+{{ fmt((runes_dps[0].dps.total / data.weapon.dps.total) * 100 - 100) }}%
 				</div></template
