@@ -32,27 +32,36 @@ onMounted(() => {
 		<pre>Asked for data resend: {{ not_ready_message ?? 'NOT SENT' }}</pre>
 	</div>
 	<div v-else>
-		{{ data.weapon.weapon.base }} <strong>{{ data.weapon.dps.total }}</strong>
+		<div>
+			{{ data.weapon.weapon.base }}
+			<span class="pr-2" v-if="data.weapon.weapon.quality">+{{ data.weapon.weapon.quality }}%</span>
+			<strong>{{ data.weapon.dps.total }}</strong>
+		</div>
 
-		<ul>
-			<li
-				:key="runes_with_dps.runes.join('')"
-				v-for="(runes_with_dps, index) in data.weapon.dps_with_different_runes"
+		<VRunesWithDps
+			:is_winner="true"
+			:rune_size="65"
+			:show_runes_names="true"
+			:runes_with_dps="data.weapon.dps_with_different_runes[0]"
+		>
+			<template v-slot:right
+				><div class="text-green-600 text-3xl pl-2">
+					+{{ fmt((data.weapon.dps_with_different_runes[0].dps.total / data.weapon.dps.total) * 100 - 100) }}%
+				</div></template
 			>
-				<VRunesWithDps
-					:is_winner="index === 0"
-					:rune_size="index === 0 ? 65 : 40"
-					:show_runes_names="index === 0"
-					:runes_with_dps="runes_with_dps"
+		</VRunesWithDps>
+
+		<details>
+			<summary>Other runes</summary>
+			<ul>
+				<li
+					:key="runes_with_dps.runes.join('')"
+					v-for="runes_with_dps in data.weapon.dps_with_different_runes.slice(1)"
 				>
-					<template v-if="index === 0" v-slot:right
-						><div class="text-green-600 text-3xl pl-2">
-							+{{ fmt((runes_with_dps.dps.total / data.weapon.dps.total) * 100 - 100) }}%
-						</div></template
-					>
-				</VRunesWithDps>
-			</li>
-		</ul>
+					<VRunesWithDps :runes_with_dps="runes_with_dps" />
+				</li>
+			</ul>
+		</details>
 	</div>
 </template>
 
