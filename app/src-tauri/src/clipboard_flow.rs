@@ -1,4 +1,5 @@
 use copypasta::{ClipboardContext, ClipboardProvider};
+use enigo::{Enigo, Mouse, Settings as EnigoSettings};
 use rdev::{Event, EventType, Key};
 use serde::{Deserialize, Serialize};
 use std::{cell::Cell, sync::Mutex};
@@ -71,11 +72,27 @@ impl Data {
     }
 }
 
+#[derive(Debug)]
+#[allow(unused)]
+enum GetMousePositionError {
+    EnigoConnection,
+    EnigoInput,
+}
+
+fn get_mouse_position() -> Result<(i32, i32), GetMousePositionError> {
+    let enigo = Enigo::new(&EnigoSettings::default())
+        .map_err(|_| GetMousePositionError::EnigoConnection)?;
+    let location = enigo
+        .location()
+        .map_err(|_| GetMousePositionError::EnigoInput)?;
+    Ok(location)
+}
+
 pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + 'static>(
     handle: &AppHandle,
     on_page_load_finished: T,
 ) -> WebviewWindow {
-    tauri::WebviewWindowBuilder::new(
+    let mut builder = tauri::WebviewWindowBuilder::new(
         handle,
         "TheUniqueLabel",
         tauri::WebviewUrl::App("/clipboard-flow".into()),
@@ -88,9 +105,13 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
             println!("{} finished loading", payload.url());
             on_page_load_finished(window, payload);
         }
-    })
-    .build()
-    .unwrap()
+    });
+
+    if let Ok(pos) = get_mouse_position() {
+        builder = builder.position(pos.0 as f64, pos.1 as f64);
+    }
+
+    builder.build().unwrap()
 }
 
 pub fn get_window(handle: &AppHandle) -> Option<WebviewWindow> {
@@ -152,8 +173,6 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
     let weapon = parser::parse(&contents)
         .map_err(Error::Parse)?
         .into_weapon();
-
-    let runes = weapon.with_different_runes();
 
     let data = Data {
         weapon_with_20qual: match weapon.quality.0 == 20 {
