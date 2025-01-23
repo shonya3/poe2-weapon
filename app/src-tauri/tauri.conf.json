@@ -12,6 +12,10 @@
 	"app": {
 		"security": {
 			"csp": null
+		},
+		"trayIcon": {
+			"iconAsTemplate": true,
+			"iconPath": "./icons/32x32.png"
 		}
 	},
 	"bundle": {
