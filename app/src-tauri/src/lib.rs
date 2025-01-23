@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    App, AppHandle,
+    App, AppHandle, RunEvent, WindowEvent,
 };
 
 mod clipboard_flow;
@@ -26,10 +26,10 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(move |_, event| {
-            if let tauri::RunEvent::ExitRequested { api, .. } = event {
-                // Prevent exit only once when Tauri launches
-                // and emits this event because there are no default windows.
+        .run(move |_, event| 
+            // Don't let closing windows to dictate, when app should be terminated
+            match event {
+            RunEvent::ExitRequested { api, .. } => {
                 if can_exit
                     .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
                     .is_ok()
@@ -37,6 +37,16 @@ pub fn run() {
                     api.prevent_exit();
                 }
             }
+
+            RunEvent::WindowEvent {
+                label,
+                event: WindowEvent::CloseRequested { .. },
+                ..
+            } => {
+                println!("{label}: Close window event.");
+                can_exit.store(false, Ordering::SeqCst);
+            }
+            _ => {}
         });
 }
 
