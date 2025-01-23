@@ -1,14 +1,24 @@
 use clipboard_flow::State;
+use std::sync::atomic::{AtomicBool, Ordering};
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::TrayIconBuilder,
+    App, AppHandle,
+};
 
 mod clipboard_flow;
 
 pub fn run() {
+    let can_exit = AtomicBool::new(false);
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![])
         .manage::<State>(State::default())
         .setup(|app| {
+            add_tray(app);
             let handle = app.handle().clone();
+
             clipboard_flow::attach_window_listeners(&handle);
             std::thread::spawn(move || clipboard_flow::listen_global_ctrl_c(handle));
 
@@ -16,9 +26,38 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|_, event| {
+        .run(move |_, event| {
             if let tauri::RunEvent::ExitRequested { api, .. } = event {
-                api.prevent_exit();
+                // Prevent exit only once when Tauri launches
+                // and emits this event because there are no default windows.
+                if can_exit
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .is_ok()
+                {
+                    api.prevent_exit();
+                }
             }
         });
+}
+
+fn add_tray(app: &App) {
+    let quit_i = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>).unwrap();
+    let menu = Menu::with_items(app, &[&quit_i]).unwrap();
+
+    let tray = TrayIconBuilder::new()
+        .menu(&menu)
+        .show_menu_on_left_click(true)
+        .icon(app.default_window_icon().unwrap().clone())
+        .build(app)
+        .unwrap();
+
+    tray.on_menu_event(|app: &AppHandle, event| match event.id.as_ref() {
+        "exit" => {
+            println!("Exit menu item was clicked");
+            app.exit(0);
+        }
+        _ => {
+            println!("menu item {:?} not handled", event.id);
+        }
+    });
 }
