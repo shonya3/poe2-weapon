@@ -5,41 +5,33 @@ const PROJECT_ROOT = node_path.resolve(import.meta.dirname, '../../');
 async function main() {
 	const new_version = process.argv[2];
 
-	if (!new_version) {
-		throw new Error('Provide a new version');
+	try {
+		if (!new_version) {
+			throw new Error('Provide a new version');
+		}
+
+		await update_root_cargo_toml(new_version);
+		await update_app_package_json(new_version);
+		await update_tauri_conf_json(new_version);
+	} catch (err) {
+		console.error(`Error: ${err}`);
+		process.exit(1);
 	}
-
-	console.log(`New version: ${new_version}`);
-
-	/**
-	 * Things to update:
-	 * - Cargo.toml
-	 * - app/package.json
-	 * - app/scr-tauri/tauri.conf.json
-	 */
-	await update_root_cargo_toml(new_version);
-	await update_app_package_json(new_version);
 }
-main().catch(err => {
-	console.error(`Error: ${err.message}`);
-	process.exit(1);
-});
+main();
 
-async function update_root_cargo_toml(new_version: string) {
+async function update_root_cargo_toml(new_version: string): Promise<void> {
 	const cargo_toml_path = node_path.join(PROJECT_ROOT, 'Cargo.toml');
 	console.log(`Updating ${cargo_toml_path}`);
 
 	try {
-		// Read the Cargo.toml file
 		const cargo_toml = await node_fs_promises.readFile(cargo_toml_path, 'utf-8');
 
-		// Replace the version in [workspace.package]
 		const updated_cargo_toml = cargo_toml.replace(
 			/\[workspace\.package\]\s*version\s*=\s*"([^"]+)"/,
 			`[workspace.package]\nversion = "${new_version}"`
 		);
 
-		// Write the updated content back to Cargo.toml
 		await node_fs_promises.writeFile(cargo_toml_path, updated_cargo_toml, 'utf-8');
 		console.log(`Updated version to ${new_version} in Cargo.toml.`);
 	} catch (err) {
@@ -47,7 +39,7 @@ async function update_root_cargo_toml(new_version: string) {
 	}
 }
 
-async function update_app_package_json(new_version: string) {
+async function update_app_package_json(new_version: string): Promise<void> {
 	const package_json_path = node_path.join(PROJECT_ROOT, 'app', 'package.json');
 	console.log(`Updating ${package_json_path}`);
 
@@ -62,5 +54,23 @@ async function update_app_package_json(new_version: string) {
 		console.log(`Updated version to ${new_version} in package.json.`);
 	} catch (err) {
 		throw new Error(`Failed to update package.json: ${err}`);
+	}
+}
+
+async function update_tauri_conf_json(new_version: string): Promise<void> {
+	const tauri_conf_path = node_path.join(PROJECT_ROOT, 'app', 'src-tauri', 'tauri.conf.json');
+	console.log(`Updating ${tauri_conf_path}`);
+
+	try {
+		const tauri_conf = await node_fs_promises.readFile(tauri_conf_path, 'utf-8');
+		const tauri_data = JSON.parse(tauri_conf);
+
+		tauri_data.version = new_version;
+
+		await node_fs_promises.writeFile(tauri_conf_path, JSON.stringify(tauri_data, null, '\t') + '\n', 'utf-8');
+
+		console.log(`Updated version to ${new_version} in tauri.conf.json.`);
+	} catch (err) {
+		throw new Error(`Failed to update tauri.conf.json: ${err}`);
 	}
 }
