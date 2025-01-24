@@ -56,6 +56,7 @@ fn add_tray(app: &App) {
 
     let tray = TrayIconBuilder::new()
         .menu(&menu)
+        .tooltip("PoE2 Weapon")
         .show_menu_on_left_click(true)
         .icon(app.default_window_icon().unwrap().clone())
         .build(app)
