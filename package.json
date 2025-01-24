@@ -4,8 +4,5 @@
 		"app:dev": "cd app && pnpm tauri dev",
 		"tauri": "cd app & pnpm tauri",
 		"bump": "node bump/src/main.ts"
-	},
-	"devDependencies": {
-		"@tauri-apps/cli": "^2"
 	}
 }
