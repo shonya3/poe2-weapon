@@ -18,6 +18,7 @@ pub fn run() {
     let can_exit = AtomicBool::new(false);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![commands::open_browser])
         .manage::<State>(State::default())
@@ -32,9 +33,7 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(move |_, event| 
-            // Don't let closing windows to dictate, when app should be terminated
-            match event {
+        .run(move |_, event| match event {
             RunEvent::ExitRequested { api, .. } => {
                 if can_exit
                     .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
@@ -44,6 +43,7 @@ pub fn run() {
                 }
             }
 
+            // Don't let closing windows to dictate, when app should be terminated
             RunEvent::WindowEvent {
                 label,
                 event: WindowEvent::CloseRequested { .. },
@@ -78,4 +78,3 @@ fn add_tray(app: &App) {
         }
     });
 }
-
