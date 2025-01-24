@@ -2,8 +2,7 @@
 	"scripts": {
 		"scrape": "node scrape/src/main.ts",
 		"app:dev": "cd app && pnpm tauri dev",
-		"tauri": "cd app & pnpm tauri",
-		"build": "pnpm tauri build",
+		"app:build": "cd app && pnpm tauri build",
 		"bump": "node bump/src/main.ts"
 	}
 }
