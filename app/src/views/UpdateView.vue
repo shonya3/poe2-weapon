@@ -1,20 +1,9 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
 import { command } from '../command';
 import { use_tauri_updater } from '../composables/use_tauri_updater';
-import { onMounted } from 'vue';
-defineEmits<{
-	'update-clicked': [];
-}>();
 
 const LATEST_RELEASE = 'https://github.com/shonya3/poe2-weapon/releases/latest';
-const { install_and_relaunch, update } = use_tauri_updater();
-
-onMounted(() => {
-	if (!update.value) {
-		useRouter().back();
-	}
-});
+const { install_and_relaunch } = use_tauri_updater();
 </script>
 
 <template>

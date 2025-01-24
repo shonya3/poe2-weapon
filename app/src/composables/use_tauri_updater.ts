@@ -6,7 +6,9 @@ export function use_tauri_updater() {
 	const update = shallowRef<Update | null>(null);
 	async function check_update() {
 		try {
+			console.log('checking');
 			update.value = await check();
+			console.log(update.value);
 		} catch (err) {
 			console.log(`Check update: ${err}`);
 		}
