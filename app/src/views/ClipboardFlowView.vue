@@ -47,8 +47,9 @@ onMounted(() => {
 
 <template>
 	<div v-if="!data">
-		<p>Data is not ready</p>
-		<pre>Asked for data resend: {{ not_ready_message ?? 'NOT SENT' }}</pre>
+		<!-- <p>Data is not ready</p>
+		<pre>Asked for data resend: {{ not_ready_message ?? 'NOT SENT' }}</pre> -->
+		Loading...
 	</div>
 	<div v-else>
 		<div class="flex pt-4 pb-4 items-center justify-between">
@@ -99,5 +100,3 @@ onMounted(() => {
 		</details>
 	</div>
 </template>
-
-<style scoped></style>

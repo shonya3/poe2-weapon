@@ -6,6 +6,7 @@
 			<RouterView />
 		</main>
 
+		<UpdateAppLink class="absolute bottom-0.5 left-2 underline" />
 		<LatestReleaseLink class="absolute bottom-0.5 right-2" />
 	</div>
 </template>
@@ -13,4 +14,5 @@
 <script setup lang="ts">
 import CustomTitleBar from './components/CustomTitleBar.vue';
 import LatestReleaseLink from './components/LatestReleaseLink.vue';
+import UpdateAppLink from './components/UpdateAppLink.vue';
 </script>
