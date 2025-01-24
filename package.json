@@ -3,6 +3,7 @@
 		"scrape": "node scrape/src/main.ts",
 		"app:dev": "cd app && pnpm tauri dev",
 		"tauri": "cd app & pnpm tauri",
+		"build": "pnpm tauri build",
 		"bump": "node bump/src/main.ts"
 	}
 }
