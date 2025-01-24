@@ -7,6 +7,7 @@ use tauri::{
 };
 
 mod clipboard_flow;
+mod tray_window;
 mod commands {
     #[tauri::command]
     pub async fn open_browser(url: String) {
@@ -25,6 +26,7 @@ pub fn run() {
         .setup(|app| {
             add_tray(app);
             let handle = app.handle().clone();
+            tray_window::create_tray_window(&handle);
 
             clipboard_flow::attach_window_listeners(&handle);
             std::thread::spawn(move || clipboard_flow::listen_global_ctrl_c(handle));

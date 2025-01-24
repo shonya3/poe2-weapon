@@ -10,33 +10,13 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div data-tauri-drag-region class="titlebar bg-sky-400">
-		<div data-tauri-drag-region class="text-center font-semibold w-100">PoE2 Weapon</div>
-		<button @click="() => webview_window?.close()" class="titlebar-button ml-auto">
+	<div data-tauri-drag-region class="flex items-center bg-sky-400 h-[30px] pl-3">
+		<div data-tauri-drag-region class="text-center font-semibold w-full select-none">PoE2 Weapon</div>
+		<button
+			@click="() => webview_window?.close()"
+			class="ml-auto flex justify-center items-center w-[30px] h-[30px] transition-all duration-150 ease-in-out hover:bg-sky-500 hover:shadow-lg"
+		>
 			<img src="https://api.iconify.design/mdi:close.svg" alt="close" />
 		</button>
 	</div>
 </template>
-
-<style scoped>
-.titlebar {
-	height: 30px;
-	/* background: #329ea3; */
-	user-select: none;
-	align-items: center;
-	display: flex;
-	position: sticky;
-	top: 0;
-	left: 0;
-	right: 0;
-}
-.titlebar-button {
-	display: inline-flex;
-	justify-content: center;
-	align-items: center;
-	width: 30px;
-	height: 30px;
-	user-select: none;
-	-webkit-user-select: none;
-}
-</style>
