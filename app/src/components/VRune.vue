@@ -13,5 +13,3 @@ const { size = 40, show_runes_names = false } = defineProps<{
 		<div v-if="show_runes_names" class="text-sm font-semibold">{{ variant }}</div>
 	</div>
 </template>
-
-<style scoped></style>

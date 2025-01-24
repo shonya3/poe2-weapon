@@ -7,13 +7,19 @@ use tauri::{
 };
 
 mod clipboard_flow;
+mod commands {
+    #[tauri::command]
+    pub async fn open_browser(url: String) {
+        open::that(url).unwrap();
+    }
+}
 
 pub fn run() {
     let can_exit = AtomicBool::new(false);
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![])
+        .invoke_handler(tauri::generate_handler![commands::open_browser])
         .manage::<State>(State::default())
         .setup(|app| {
             add_tray(app);
@@ -72,3 +78,4 @@ fn add_tray(app: &App) {
         }
     });
 }
+

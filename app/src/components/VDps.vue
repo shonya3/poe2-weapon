@@ -7,5 +7,3 @@ defineProps<{ dps: Dps }>();
 <template>
 	<div>{{ fmt(dps.total) }}</div>
 </template>
-
-<style scoped></style>

@@ -27,5 +27,3 @@ const {
 		<slot name="right" />
 	</div>
 </template>
-
-<style scoped></style>
