@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-	<div class="py-4 rounded-lg">
+	<div class="px-2 py-4 rounded-lg">
 		<div class="flex items-center mb-2">
 			<span class="text-2xl mr-2">⚔️</span>
 			<span class="text-base font-bold text-gray-700">

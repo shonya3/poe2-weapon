@@ -2,7 +2,7 @@
 	<div class="w-full min-h-lvh bg-stone-200 relative">
 		<CustomTitleBar />
 
-		<main class="px-2 cf:px-4">
+		<main class="px-2">
 			<RouterView />
 		</main>
 
@@ -13,6 +13,6 @@
 
 <script setup lang="ts">
 import CustomTitleBar from './components/CustomTitleBar.vue';
-import LatestReleaseLink from './components/LatestReleaseLink.vue';
-import UpdateAppLink from './components/UpdateAppLink.vue';
+import LatestReleaseLink from './components/links/LatestReleaseLink.vue';
+import UpdateAppLink from './components/links/UpdateAppLink.vue';
 </script>
