@@ -2,7 +2,7 @@
 	<div class="w-full min-h-lvh bg-stone-200 relative">
 		<CustomTitleBar />
 
-		<main class="px-4">
+		<main class="px-2 cf:px-4">
 			<RouterView />
 		</main>
 

@@ -1,1 +1,6 @@
 @import 'tailwindcss';
+
+@theme {
+	/* clipboard-flow window */
+	--breakpoint-cf: 400px;
+}

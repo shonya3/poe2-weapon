@@ -9,6 +9,7 @@ pub fn create_tray_window(handle: &AppHandle) {
         "TrayWindow",
         tauri::WebviewUrl::App("/tray-window".into()),
     )
+    .title("PoE2 Weapon")
     .visible(false)
     .decorations(false)
     .resizable(false)
