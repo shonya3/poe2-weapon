@@ -1,3 +1,13 @@
+export const SUPPORTED_ITEM_CLASSES = [
+	'One Hand Maces',
+	'Two Hand Maces',
+	'Quarterstaves',
+	'Bows',
+	'Crossbows',
+] as const;
+
+export type ItemClass = (typeof SUPPORTED_ITEM_CLASSES)[number];
+
 export const RUNES_VARIANTS = ['Iron', 'Desert', 'Glacial', 'Storm'] as const;
 export type Rune = (typeof RUNES_VARIANTS)[number];
 
@@ -13,11 +23,12 @@ export type FlatDamage = {
 
 export type Weapon = {
 	base: string;
+	item_class: ItemClass;
 	quality: number;
 	phys: number | null;
 	atk_spd: number | null;
 	flats: Array<FlatDamage>;
-	runes: [Rune, Rune];
+	runes: Array<Rune>;
 };
 
 export type Dps = {
@@ -27,7 +38,7 @@ export type Dps = {
 };
 
 export type DpsWithRunes = {
-	runes: [Rune, Rune];
+	runes: [Rune] | [Rune, Rune];
 	dps: Dps;
 };
 

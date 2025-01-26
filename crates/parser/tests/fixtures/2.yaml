@@ -27,6 +27,7 @@ text: |
     Grants 4 Life per Enemy Hit
 expected:
     base: Expert Shortbow
+    item_class: Bows
     explicits:
         flats:
             - damage_type: physical

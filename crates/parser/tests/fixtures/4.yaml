@@ -18,6 +18,7 @@ text: |
     +3 to Level of all Melee Skills
 expected:
     base: Crackling Quarterstaff
+    item_class: Quarterstaves
     explicits:
         flats:
             - damage_type: fire

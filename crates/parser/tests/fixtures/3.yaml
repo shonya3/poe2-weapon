@@ -30,6 +30,7 @@ text: |
     lest they return with a strange new purpose.
 expected:
     base: Recurve Bow
+    item_class: Bows
     explicits:
         flats: []
         phys: 71

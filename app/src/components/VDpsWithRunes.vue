@@ -20,7 +20,12 @@ const {
 		<slot name="left" />
 		<div class="flex">
 			<Rune :size="rune_size" :show_runes_names="show_runes_names" :variant="runes_with_dps.runes[0]" />
-			<Rune :size="rune_size" :show_runes_names="show_runes_names" :variant="runes_with_dps.runes[1]" />
+			<Rune
+				v-if="runes_with_dps.runes[1]"
+				:size="rune_size"
+				:show_runes_names="show_runes_names"
+				:variant="runes_with_dps.runes[1]"
+			/>
 		</div>
 
 		<VDps :class="is_winner ? ' text-stone-800 text-4xl' : ''" :dps="runes_with_dps.dps" />

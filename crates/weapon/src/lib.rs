@@ -121,6 +121,7 @@ pub struct Explicits {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Weapon {
     pub base: String,
+    pub item_class: ItemClass,
     pub quality: Quality,
     pub explicits: Explicits,
     pub runes: Vec<Rune>,
@@ -135,13 +136,28 @@ pub struct Dps {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DpsWithRunes {
-    pub runes: (Rune, Rune),
+    pub runes: Vec<Rune>,
     pub dps: Dps,
+}
+
+pub enum Handed {
+    OneHanded,
+    TwoHanded,
 }
 
 impl Weapon {
     pub fn get_all_weapons_stats() -> &'static Vec<WeaponStats> {
         &WEAPON_STATS
+    }
+
+    pub fn handed(&self) -> Handed {
+        match self.item_class {
+            ItemClass::OneHandMaces => Handed::OneHanded,
+            ItemClass::TwoHandMaces => Handed::TwoHanded,
+            ItemClass::Quarterstaves => Handed::TwoHanded,
+            ItemClass::Bows => Handed::TwoHanded,
+            ItemClass::Crossbows => Handed::TwoHanded,
+        }
     }
 
     pub fn dps(&self) -> Dps {
@@ -156,20 +172,34 @@ impl Weapon {
         let runes = Rune::runes();
         let mut vec: Vec<DpsWithRunes> = vec![];
 
-        // Iterate over all pairs, including same rune pairs, but ensure order doesn't matter
-        for i in 0..runes.len() {
-            for j in i..runes.len() {
-                // Start j from i to avoid reverse pairs like (Storm, Iron)
-                let rune1 = runes[i];
-                let rune2 = runes[j];
+        match self.handed() {
+            Handed::OneHanded => {
+                for rune in Rune::runes() {
+                    let mut weapon_with_runes = self.clone();
+                    weapon_with_runes.runes = vec![rune];
+                    vec.push(DpsWithRunes {
+                        runes: vec![rune],
+                        dps: weapon_with_runes.dps(),
+                    });
+                }
+            }
+            Handed::TwoHanded => {
+                // Iterate over all pairs, including same rune pairs, but ensure order doesn't matter
+                for i in 0..runes.len() {
+                    for j in i..runes.len() {
+                        // Start j from i to avoid reverse pairs like (Storm, Iron)
+                        let rune1 = runes[i];
+                        let rune2 = runes[j];
 
-                let mut weapon_with_runes = self.clone();
-                weapon_with_runes.runes = vec![rune1, rune2];
+                        let mut weapon_with_runes = self.clone();
+                        weapon_with_runes.runes = vec![rune1, rune2];
 
-                vec.push(DpsWithRunes {
-                    runes: (rune1, rune2),
-                    dps: weapon_with_runes.dps(),
-                });
+                        vec.push(DpsWithRunes {
+                            runes: vec![rune1, rune2],
+                            dps: weapon_with_runes.dps(),
+                        });
+                    }
+                }
             }
         }
 
@@ -273,6 +303,21 @@ impl Weapon {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ItemClass {
+    #[serde(rename = "One Hand Maces")]
+    OneHandMaces,
+    #[serde(rename = "Two Hand Maces", alias = "Two Hand Maces")]
+    TwoHandMaces,
+    #[serde(rename = "Quarterstaves")]
+    Quarterstaves,
+    #[serde(rename = "Bows")]
+    Bows,
+    #[serde(rename = "Crossbows")]
+    Crossbows,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct AttackSpeedModifier(pub u8);
@@ -332,6 +377,7 @@ mod tests {
     fn phys_dps() {
         let white_weapon = Weapon {
             base: "Expert Shortbow".to_owned(),
+            item_class: ItemClass::Bows,
             quality: Quality(20),
             explicits: Explicits::default(),
             runes: vec![],
@@ -344,6 +390,7 @@ mod tests {
     fn dps() {
         let weapon = Weapon {
             base: "Expert Crackling Quarterstaff".to_owned(),
+            item_class: ItemClass::Quarterstaves,
             quality: Quality(20),
             explicits: Explicits {
                 flats: vec![
@@ -365,5 +412,18 @@ mod tests {
         assert_eq!(44.066406, weapon.phys_dps());
         assert_eq!(270.19998, weapon.elemental_dps());
         assert_eq!(314.2664, weapon.total());
+    }
+
+    #[test]
+    fn one_handed_generate_one_rune_pairs() {
+        let weapon = Weapon {
+            base: "Warpick".to_owned(),
+            item_class: ItemClass::OneHandMaces,
+            quality: Quality(0),
+            explicits: Explicits::default(),
+            runes: vec![],
+        };
+
+        assert_eq!(1, weapon.with_different_runes()[0].runes.len());
     }
 }

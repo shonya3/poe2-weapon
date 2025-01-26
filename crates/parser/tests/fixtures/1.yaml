@@ -24,6 +24,7 @@ text: |
     10% increased Light Radius
 expected:
     base: Leaden Greathammer
+    item_class: Two Hand Maces
     explicits:
         flats:
             - damage_type: fire

@@ -1,11 +1,13 @@
 #![allow(unused)]
 pub mod bases;
 
+use std::str::FromStr;
+
 use bases::BASES;
 use serde::{Deserialize, Serialize};
 use weapon::{
-    AttackSpeedModifier, DamageType, Explicits, FlatDamage, PhysModifier, Quality, Range, Rune,
-    Weapon,
+    AttackSpeedModifier, DamageType, Explicits, FlatDamage, ItemClass, PhysModifier, Quality,
+    Range, Rune, Weapon,
 };
 
 pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
@@ -19,6 +21,7 @@ pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Parsed {
     pub base: String,
+    pub item_class: ItemClass,
     pub explicits: Explicits,
     pub runes: Vec<Rune>,
     pub quality: Quality,
@@ -34,6 +37,7 @@ impl From<Parsed> for Weapon {
     fn from(value: Parsed) -> Self {
         Weapon {
             base: value.base,
+            item_class: value.item_class,
             quality: value.quality,
             explicits: value.explicits,
             runes: value.runes,
@@ -66,6 +70,8 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
     if !SUPPORTED_ITEM_CLASSES.contains(&item_class) {
         return Err(ParseError::UnsupportedItemClass(item_class.to_owned()));
     }
+
+    let item_class = serde_json::from_str::<ItemClass>(&format!("\"{item_class}\"")).unwrap();
 
     let mut base: Option<String> = None;
     let mut quality = Quality::default();
@@ -159,6 +165,7 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
 
     Ok(Parsed {
         base,
+        item_class,
         explicits: Explicits {
             flats,
             phys,
