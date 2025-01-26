@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { listen, emit } from '@tauri-apps/api/event';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { ClipboardFlowData, DpsWithRunes } from '../types';
 import VRunesWithDps from '../components/VDpsWithRunes.vue';
 import VDps from '../components/VDps.vue';
