@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    App, AppHandle, RunEvent, WindowEvent,
+    App, RunEvent, WindowEvent,
 };
 
 mod clipboard_flow;
@@ -35,7 +35,7 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(move |_, event| match event {
+        .run(move |app, event| match event {
             RunEvent::ExitRequested { api, .. } => {
                 if can_exit
                     .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
@@ -44,7 +44,6 @@ pub fn run() {
                     api.prevent_exit();
                 }
             }
-
             // Don't let closing windows to dictate, when app should be terminated
             RunEvent::WindowEvent {
                 label,
@@ -54,6 +53,13 @@ pub fn run() {
                 println!("{label}: Close window event.");
                 can_exit.store(false, Ordering::SeqCst);
             }
+            RunEvent::MenuEvent(menu_event) => {
+                if menu_event.id().as_ref() == "exit" {
+                    can_exit.store(true, Ordering::SeqCst);
+                    app.exit(0);
+                    println!("Exit menu item was clicked");
+                };
+            }
             _ => {}
         });
 }
@@ -62,21 +68,11 @@ fn add_tray(app: &App) {
     let quit_i = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>).unwrap();
     let menu = Menu::with_items(app, &[&quit_i]).unwrap();
 
-    let tray = TrayIconBuilder::new()
+    TrayIconBuilder::new()
         .menu(&menu)
         .tooltip("PoE2 Weapon")
         .show_menu_on_left_click(true)
         .icon(app.default_window_icon().unwrap().clone())
         .build(app)
         .unwrap();
-
-    tray.on_menu_event(|app: &AppHandle, event| match event.id.as_ref() {
-        "exit" => {
-            println!("Exit menu item was clicked");
-            app.exit(0);
-        }
-        _ => {
-            println!("menu item {:?} not handled", event.id);
-        }
-    });
 }
