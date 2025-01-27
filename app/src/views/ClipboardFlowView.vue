@@ -3,7 +3,7 @@ import { listen, emit } from '@tauri-apps/api/event';
 import { computed, onMounted, ref } from 'vue';
 import { ClipboardFlowData, DpsWithRunes } from '../types';
 import VRunesWithDps from '../components/VDpsWithRunes.vue';
-import VDps from '../components/VDps.vue';
+import VWeapon from '../components/VWeapon.vue';
 import { fmt } from '../formatter';
 
 const ready = ref(false);
@@ -52,19 +52,7 @@ onMounted(() => {
 		Loading...
 	</div>
 	<div v-else class="px-2">
-		<div class="flex pt-4 pb-4 items-center justify-between">
-			<div>
-				<span class="text-2xl text-stone-700">
-					{{ data.weapon.weapon.base }}
-				</span>
-				<div class="text-stone-500 text-base leading-5 flex gap-2">
-					<div class="flex gap-1">dps: <VDps class="text-stone-700" :dps="data.weapon.dps" /></div>
-					<div>
-						quality: <span class="text-stone-600">{{ data.weapon.weapon.quality }}</span>
-					</div>
-				</div>
-			</div>
-		</div>
+		<VWeapon :weapon="data.weapon.weapon" :dps="data.weapon.dps" />
 
 		<div v-if="data.weapon_q20 && data.weapon.weapon.quality < 20" class="place-items-end ml-auto">
 			<div class="flex items-center gap-1 text-xs text-stone-600">

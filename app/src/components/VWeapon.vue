@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import { Dps, Weapon } from '../types';
+import VDps from './VDps.vue';
+
+defineProps<{ weapon: Weapon; dps: Dps }>();
+</script>
+
+<template>
+	<div class="flex pt-4 pb-4 items-center justify-between">
+		<div>
+			<span class="text-2xl text-stone-700">
+				{{ weapon.base }}
+			</span>
+			<div class="text-stone-500 text-base leading-5 flex gap-2">
+				<div class="flex gap-1">dps: <VDps class="text-stone-700" :dps="dps" /></div>
+				<div>
+					quality: <span class="text-stone-600">{{ weapon.quality }}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
