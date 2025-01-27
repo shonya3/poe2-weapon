@@ -35,6 +35,7 @@ export type Dps = {
 	total: number;
 	pdps: number;
 	edps: number;
+	cdps: number;
 };
 
 export type DpsWithRunes = {

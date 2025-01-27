@@ -36,9 +36,15 @@ impl Weapon {
     pub fn dps(&self) -> Dps {
         let pdps = self.phys_dps();
         let edps = self.elemental_dps();
-        let total = pdps + edps;
+        let cdps = self.chaos_dps();
+        let total = pdps + edps + cdps;
 
-        Dps { total, edps, pdps }
+        Dps {
+            total,
+            edps,
+            pdps,
+            cdps,
+        }
     }
 
     pub fn with_different_runes(&self) -> Vec<DpsWithRunes> {
@@ -167,12 +173,30 @@ impl Weapon {
             * 0.5
     }
 
-    pub fn chaos_dps() {
-        //
+    pub fn chaos_dps(&self) -> f32 {
+        let base_chaos_damage: Range = self
+            .base_damage()
+            .iter()
+            .filter(|flat| flat.is_chaos())
+            .map(|flat| flat.range)
+            .sum();
+
+        let chaos_explicit = self
+            .explicits
+            .flats
+            .iter()
+            .find(|f| f.is_chaos())
+            .copied()
+            .unwrap_or_default()
+            .range;
+
+        (base_chaos_damage.sum() + chaos_explicit.sum()) as f32
+            * (self.base_aps() * (1.0 + self.explicits.atk_spd.unwrap_or_default().0 as f32 / 100.))
+            * 0.5
     }
 
     pub fn total(&self) -> f32 {
-        self.phys_dps() + self.elemental_dps()
+        self.phys_dps() + self.elemental_dps() + self.chaos_dps()
     }
 }
 
@@ -294,6 +318,7 @@ pub struct Dps {
     pub total: f32,
     pub edps: f32,
     pub pdps: f32,
+    pub cdps: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -344,6 +369,10 @@ impl FlatDamage {
     pub fn is_elemental(&self) -> bool {
         self.damage_type.is_elemental()
     }
+
+    pub fn is_chaos(&self) -> bool {
+        self.damage_type.is_chaos()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
@@ -370,6 +399,10 @@ impl DamageType {
             DamageType::Lightning => true,
             DamageType::Chaos => false,
         }
+    }
+
+    pub fn is_chaos(&self) -> bool {
+        matches!(self, DamageType::Chaos)
     }
 }
 
@@ -429,5 +462,37 @@ mod tests {
         };
 
         assert_eq!(1, weapon.with_different_runes()[0].runes.len());
+    }
+
+    fn one_fr_f32(val: f32) -> f32 {
+        (val * 10.0).round() / 10.0
+    }
+
+    #[test]
+    fn total_dps_with_chaos() {
+        let cultist_bow = Weapon {
+            base: "Cultist Bow".to_owned(),
+            item_class: ItemClass::Bows,
+            quality: Quality(20),
+            explicits: Explicits {
+                flats: vec![
+                    FlatDamage {
+                        damage_type: DamageType::Fire,
+                        range: Range(5, 10),
+                    },
+                    FlatDamage {
+                        damage_type: DamageType::Lightning,
+                        range: Range(3, 49),
+                    },
+                ],
+                ..Default::default()
+            },
+            runes: vec![],
+        };
+
+        assert_eq!(97.2, one_fr_f32(cultist_bow.dps().total));
+        assert_eq!(97.2, one_fr_f32(cultist_bow.total()));
+        assert_eq!(57.0, one_fr_f32(cultist_bow.chaos_dps()));
+        assert_eq!(40.2, one_fr_f32(cultist_bow.elemental_dps()));
     }
 }
