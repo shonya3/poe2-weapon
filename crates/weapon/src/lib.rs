@@ -5,119 +5,6 @@ use std::ops::Add;
 pub static WEAPON_STATS: Lazy<Vec<WeaponStats>> =
     Lazy::new(|| serde_json::from_str(include_str!("../data/bases.json")).unwrap());
 
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
-pub struct WeaponStats {
-    pub base: String,
-    pub img: String,
-    pub damages: Vec<FlatDamage>,
-    pub aps: f32,
-}
-
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
-pub struct Range(pub u16, pub u16);
-
-impl Range {
-    /// sum min and max values.
-    pub fn sum(&self) -> u16 {
-        self.0 + self.1
-    }
-}
-
-impl Add for Range {
-    type Output = Range;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Range(self.0 + rhs.0, self.1 + rhs.1)
-    }
-}
-
-impl std::iter::Sum for Range {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        let mut summ = Range(0, 0);
-
-        for range in iter {
-            summ.0 += range.0;
-            summ.1 += range.1;
-        }
-
-        summ
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum Rune {
-    Iron,
-    Desert,
-    Glacial,
-    Storm,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum RuneMartialBonus {
-    Phys(PhysModifier),
-    Flat(FlatDamage),
-}
-
-impl Rune {
-    pub fn runes() -> [Rune; 4] {
-        [Rune::Iron, Rune::Desert, Rune::Glacial, Rune::Storm]
-    }
-
-    pub fn martial(&self) -> RuneMartialBonus {
-        match self {
-            Rune::Iron => RuneMartialBonus::Phys(PhysModifier(20)),
-            Rune::Desert => RuneMartialBonus::Flat(Rune::desert_rune_martial()),
-            Rune::Glacial => RuneMartialBonus::Flat(Rune::glacial_rune_martial()),
-            Rune::Storm => RuneMartialBonus::Flat(Rune::storm_rune_martial()),
-        }
-    }
-
-    pub fn flat_martial(&self) -> Option<FlatDamage> {
-        match self {
-            Rune::Iron => None,
-            Rune::Desert => Some(Rune::desert_rune_martial()),
-            Rune::Glacial => Some(Rune::glacial_rune_martial()),
-            Rune::Storm => Some(Rune::storm_rune_martial()),
-        }
-    }
-
-    pub fn desert_rune_martial() -> FlatDamage {
-        FlatDamage {
-            damage_type: DamageType::Fire,
-            range: Range(7, 11),
-        }
-    }
-
-    pub fn glacial_rune_martial() -> FlatDamage {
-        FlatDamage {
-            damage_type: DamageType::Cold,
-            range: Range(6, 10),
-        }
-    }
-
-    pub fn storm_rune_martial() -> FlatDamage {
-        FlatDamage {
-            damage_type: DamageType::Lightning,
-            range: Range(1, 20),
-        }
-    }
-
-    pub fn iron_rune_martial() -> PhysModifier {
-        PhysModifier(20)
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Default, Deserialize, PartialEq)]
-pub struct Explicits {
-    pub flats: Vec<FlatDamage>,
-    pub phys: Option<PhysModifier>,
-    pub atk_spd: Option<AttackSpeedModifier>,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Weapon {
     pub base: String,
@@ -127,27 +14,13 @@ pub struct Weapon {
     pub runes: Vec<Rune>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Dps {
-    pub total: f32,
-    pub edps: f32,
-    pub pdps: f32,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DpsWithRunes {
-    pub runes: Vec<Rune>,
-    pub dps: Dps,
-}
-
-pub enum Handed {
-    OneHanded,
-    TwoHanded,
-}
-
 impl Weapon {
     pub fn get_all_weapons_stats() -> &'static Vec<WeaponStats> {
         &WEAPON_STATS
+    }
+
+    pub fn base_stats(&self) -> &WeaponStats {
+        WEAPON_STATS.iter().find(|s| s.base == self.base).unwrap()
     }
 
     pub fn handed(&self) -> Handed {
@@ -301,6 +174,137 @@ impl Weapon {
     pub fn total(&self) -> f32 {
         self.phys_dps() + self.elemental_dps()
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct WeaponStats {
+    pub base: String,
+    pub img: String,
+    pub damages: Vec<FlatDamage>,
+    pub aps: f32,
+}
+
+pub fn add(left: u64, right: u64) -> u64 {
+    left + right
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
+pub struct Range(pub u16, pub u16);
+
+impl Range {
+    /// sum min and max values.
+    pub fn sum(&self) -> u16 {
+        self.0 + self.1
+    }
+}
+
+impl Add for Range {
+    type Output = Range;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Range(self.0 + rhs.0, self.1 + rhs.1)
+    }
+}
+
+impl std::iter::Sum for Range {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        let mut summ = Range(0, 0);
+
+        for range in iter {
+            summ.0 += range.0;
+            summ.1 += range.1;
+        }
+
+        summ
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Rune {
+    Iron,
+    Desert,
+    Glacial,
+    Storm,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum RuneMartialBonus {
+    Phys(PhysModifier),
+    Flat(FlatDamage),
+}
+
+impl Rune {
+    pub fn runes() -> [Rune; 4] {
+        [Rune::Iron, Rune::Desert, Rune::Glacial, Rune::Storm]
+    }
+
+    pub fn martial(&self) -> RuneMartialBonus {
+        match self {
+            Rune::Iron => RuneMartialBonus::Phys(PhysModifier(20)),
+            Rune::Desert => RuneMartialBonus::Flat(Rune::desert_rune_martial()),
+            Rune::Glacial => RuneMartialBonus::Flat(Rune::glacial_rune_martial()),
+            Rune::Storm => RuneMartialBonus::Flat(Rune::storm_rune_martial()),
+        }
+    }
+
+    pub fn flat_martial(&self) -> Option<FlatDamage> {
+        match self {
+            Rune::Iron => None,
+            Rune::Desert => Some(Rune::desert_rune_martial()),
+            Rune::Glacial => Some(Rune::glacial_rune_martial()),
+            Rune::Storm => Some(Rune::storm_rune_martial()),
+        }
+    }
+
+    pub fn desert_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Fire,
+            range: Range(7, 11),
+        }
+    }
+
+    pub fn glacial_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Cold,
+            range: Range(6, 10),
+        }
+    }
+
+    pub fn storm_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Lightning,
+            range: Range(1, 20),
+        }
+    }
+
+    pub fn iron_rune_martial() -> PhysModifier {
+        PhysModifier(20)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Default, Deserialize, PartialEq)]
+pub struct Explicits {
+    pub flats: Vec<FlatDamage>,
+    pub phys: Option<PhysModifier>,
+    pub atk_spd: Option<AttackSpeedModifier>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Dps {
+    pub total: f32,
+    pub edps: f32,
+    pub pdps: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DpsWithRunes {
+    pub runes: Vec<Rune>,
+    pub dps: Dps,
+}
+
+pub enum Handed {
+    OneHanded,
+    TwoHanded,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

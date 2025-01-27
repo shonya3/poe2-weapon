@@ -52,7 +52,7 @@ onMounted(() => {
 		Loading...
 	</div>
 	<div v-else class="px-2">
-		<VWeapon :weapon="data.weapon.weapon" :dps="data.weapon.dps" />
+		<VWeapon :img="data.img" :weapon="data.weapon.weapon" :dps="data.weapon.dps" />
 
 		<div v-if="data.weapon_q20 && data.weapon.weapon.quality < 20" class="place-items-end ml-auto">
 			<div class="flex items-center gap-1 text-xs text-stone-600">

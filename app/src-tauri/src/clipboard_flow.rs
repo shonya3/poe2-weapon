@@ -14,6 +14,7 @@ pub type State = Mutex<Option<Data>>;
 pub struct Data {
     pub weapon: WeaponWithCalculatedRunes,
     pub elapsed: u128,
+    pub img: String,
     pub weapon_q20: Option<WeaponWithCalculatedRunes>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -189,6 +190,7 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
                 Some(WeaponWithCalculatedRunes::new(weapon))
             }
         },
+        img: weapon.base_stats().img.to_owned(),
         weapon: WeaponWithCalculatedRunes::new(weapon),
         elapsed,
     };
