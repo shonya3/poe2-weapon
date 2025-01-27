@@ -1,5 +1,5 @@
 <template>
-	<div class="w-full min-h-lvh bg-stone-200 relative">
+	<div class="w-full min-h-lvh bg-stone-50 relative">
 		<CustomTitleBar />
 
 		<main class="px-2">

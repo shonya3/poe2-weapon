@@ -51,7 +51,7 @@ onMounted(() => {
 		<pre>Asked for data resend: {{ not_ready_message ?? 'NOT SENT' }}</pre> -->
 		Loading...
 	</div>
-	<div v-else>
+	<div v-else class="px-2">
 		<div class="flex pt-4 pb-4 items-center justify-between">
 			<div>
 				<span class="text-2xl text-stone-700">

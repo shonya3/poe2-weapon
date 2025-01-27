@@ -10,7 +10,7 @@ onMounted(async () => {
 </script>
 
 <template>
-	<div data-tauri-drag-region class="flex items-center bg-sky-400 h-[30px] pl-3">
+	<div data-tauri-drag-region class="flex items-center bg-sky-400 h-[30px] pl-3 sticky top-0">
 		<div data-tauri-drag-region class="text-center font-semibold w-full select-none">PoE2 Weapon</div>
 		<button
 			@click="() => webview_window?.close()"
