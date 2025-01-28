@@ -238,6 +238,7 @@ fn listen_keyboard<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c: 
         }
         EventType::KeyPress(Key::KeyC) => {
             if ctrl_pressed.get() {
+                ctrl_pressed.set(false);
                 on_ctrl_c();
             }
         }
