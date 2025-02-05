@@ -1,0 +1,28 @@
+text: |-
+    Phoenix Thirst
+    Advanced Dualstring Bow
+    Bow
+    Physical Damage: 44-82
+    Critical Hit Chance: 5.00%
+    Attacks per Second: 1.35
+    Item Level: 64
+    Requires Level 55, 126 Dex
+    Bow Attacks fire an additional Arrow
+    42% increased Physical Damage
+    Adds 2 to 4 Physical Damage
+    +95 to Accuracy Rating
+    63% increased Elemental Damage with Attacks
+    12% increased Attack Speed
+expected:
+    base: Advanced Dualstring Bow
+    item_class: Bows
+    explicits:
+        flats:
+            - damage_type: physical
+              range:
+                  - 2
+                  - 4
+        phys: 42
+        atk_spd: 12
+    runes: []
+    quality: 0

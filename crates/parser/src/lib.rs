@@ -7,7 +7,7 @@ use bases::BASES;
 use serde::{Deserialize, Serialize};
 use weapon::{
     AttackSpeedModifier, DamageType, Explicits, FlatDamage, ItemClass, PhysModifier, Quality,
-    Range, Rune, Weapon,
+    Range, Rune, Weapon, WEAPON_STATS,
 };
 
 pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
@@ -59,20 +59,6 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
         .collect::<Vec<String>>()
         .join("\n");
 
-    let item_class = text
-        .lines()
-        .find(|s| s.contains("Item Class:"))
-        .and_then(|s| {
-            let (_, right) = s.split_once(": ")?;
-            Some(right.trim())
-        })
-        .ok_or(ParseError::ItemClassMissing)?;
-    if !SUPPORTED_ITEM_CLASSES.contains(&item_class) {
-        return Err(ParseError::UnsupportedItemClass(item_class.to_owned()));
-    }
-
-    let item_class = serde_json::from_str::<ItemClass>(&format!("\"{item_class}\"")).unwrap();
-
     let mut base: Option<String> = None;
     let mut quality = Quality::default();
     let mut phys: Option<PhysModifier> = None;
@@ -104,6 +90,27 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
     }
 
     let base = base.ok_or(ParseError::UnsupportedItemBase)?;
+    let item_class = text
+        .lines()
+        .find(|s| s.contains("Item Class:"))
+        .and_then(|s| {
+            let (_, right) = s.split_once(": ")?;
+            Some(right.trim())
+        })
+        .or_else(|| {
+            WEAPON_STATS
+                .iter()
+                .find(|s| s.base == base)
+                .map(|s| s.item_class.as_str())
+        })
+        .ok_or(ParseError::ItemClassMissing)?;
+
+    if !SUPPORTED_ITEM_CLASSES.contains(&item_class) {
+        return Err(ParseError::UnsupportedItemClass(item_class.to_owned()));
+    }
+
+    let item_class = serde_json::from_str::<ItemClass>(&format!("\"{item_class}\"")).unwrap();
+
     let mut runes: Vec<Rune> = vec![];
 
     if !item_level_line_met {
