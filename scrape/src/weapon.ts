@@ -3,9 +3,19 @@ export type FlatDamage = {
 	damage_type: DamageType;
 	range: [number, number];
 };
-export type WeaponStats = {
+export type WeaponBaseStats = {
 	base: string;
+	item_class: ItemClass;
 	img: string;
 	damages: Array<FlatDamage>;
 	aps: number;
 };
+
+export const SUPPORTED_ITEM_CLASSES = [
+	'One Hand Maces',
+	'Two Hand Maces',
+	'Quarterstaves',
+	'Bows',
+	'Crossbows',
+] as const;
+export type ItemClass = (typeof SUPPORTED_ITEM_CLASSES)[number];

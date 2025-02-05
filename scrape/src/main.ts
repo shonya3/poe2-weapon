@@ -2,13 +2,13 @@ import playwright from 'playwright';
 import node_fs_promises from 'node:fs/promises';
 import node_path from 'node:path';
 
-import { scrap_page, WEAPON_TYPES } from './scrap_page.ts';
-import type { WeaponStats } from './weapon.ts';
+import { scrap_page, WIKI_WEAPON_TYPES } from './scrap_page.ts';
+import type { WeaponBaseStats } from './weapon.ts';
 
 async function main() {
 	const browser = await playwright.chromium.launch({ timeout: 30000, headless: true });
 	const context = await browser.newContext();
-	const promises = WEAPON_TYPES.map(async weapon_type => {
+	const promises = WIKI_WEAPON_TYPES.map(async weapon_type => {
 		const page = await context.newPage();
 		return await scrap_page(weapon_type, page);
 	});
@@ -22,7 +22,7 @@ async function main() {
 	);
 }
 
-async function write_bases_rs_into_parser_crate(weapons: Array<WeaponStats>): Promise<void> {
+async function write_bases_rs_into_parser_crate(weapons: Array<WeaponBaseStats>): Promise<void> {
 	let rs_str = `pub const BASES: [&str; ${weapons.length}] = [\n`;
 	weapons.forEach(({ base }) => (rs_str += `\t"${base}",\n`));
 	rs_str += '];\n';
