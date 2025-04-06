@@ -121,12 +121,14 @@ impl Weapon {
             .unwrap_or_default();
 
         let runes_phys_modifier = PhysModifier(
-            20 * self
-                .runes
+            self.runes
                 .iter()
-                .filter(|rune| matches!(rune, Rune::Iron))
-                .collect::<Vec<_>>()
-                .len() as u16,
+                .filter(|rune| rune.is_iron())
+                .map(|r| match r.martial() {
+                    RuneMartialBonus::Phys(phys_modifier) => phys_modifier.0,
+                    RuneMartialBonus::Flat(_) => 0,
+                })
+                .sum(),
         );
 
         // let qual = 1.0 + self.quality.0 as f32 / 100.;
@@ -247,10 +249,18 @@ impl std::iter::Sum for Range {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Rune {
+    LesserIron,
     Iron,
+    GreaterIron,
+    LesserDesert,
     Desert,
+    GreaterDesert,
+    LesserGlacial,
     Glacial,
+    GreaterGlacial,
+    LesserStorm,
     Storm,
+    GreaterStorm,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -260,25 +270,65 @@ pub enum RuneMartialBonus {
 }
 
 impl Rune {
-    pub fn runes() -> [Rune; 4] {
-        [Rune::Iron, Rune::Desert, Rune::Glacial, Rune::Storm]
+    pub fn runes() -> [Rune; 12] {
+        [
+            Rune::LesserIron,
+            Rune::Iron,
+            Rune::GreaterIron,
+            Rune::LesserDesert,
+            Rune::Desert,
+            Rune::GreaterDesert,
+            Rune::LesserGlacial,
+            Rune::Glacial,
+            Rune::GreaterGlacial,
+            Rune::LesserStorm,
+            Rune::Storm,
+            Rune::GreaterStorm,
+        ]
+    }
+
+    pub fn is_iron(&self) -> bool {
+        matches!(self, Rune::LesserIron | Rune::Iron | Rune::GreaterIron)
     }
 
     pub fn martial(&self) -> RuneMartialBonus {
         match self {
+            Rune::LesserIron => RuneMartialBonus::Phys(PhysModifier(15)),
             Rune::Iron => RuneMartialBonus::Phys(PhysModifier(20)),
+            Rune::GreaterIron => RuneMartialBonus::Phys(PhysModifier(25)),
+            Rune::LesserDesert => RuneMartialBonus::Flat(Rune::lesser_desert_rune_martial()),
             Rune::Desert => RuneMartialBonus::Flat(Rune::desert_rune_martial()),
+            Rune::GreaterDesert => RuneMartialBonus::Flat(Rune::greater_desert_rune_martial()),
+            Rune::LesserGlacial => RuneMartialBonus::Flat(Rune::lesser_glacial_rune_martial()),
             Rune::Glacial => RuneMartialBonus::Flat(Rune::glacial_rune_martial()),
+            Rune::GreaterGlacial => RuneMartialBonus::Flat(Rune::greater_glacial_rune_martial()),
+            Rune::LesserStorm => RuneMartialBonus::Flat(Rune::lesser_storm_rune_martial()),
             Rune::Storm => RuneMartialBonus::Flat(Rune::storm_rune_martial()),
+            Rune::GreaterStorm => RuneMartialBonus::Flat(Rune::greater_storm_rune_martial()),
         }
     }
 
     pub fn flat_martial(&self) -> Option<FlatDamage> {
         match self {
+            Rune::LesserIron => None,
             Rune::Iron => None,
+            Rune::GreaterIron => None,
+            Rune::LesserDesert => Some(Rune::lesser_desert_rune_martial()),
             Rune::Desert => Some(Rune::desert_rune_martial()),
+            Rune::GreaterDesert => Some(Rune::greater_desert_rune_martial()),
+            Rune::LesserGlacial => Some(Rune::lesser_glacial_rune_martial()),
             Rune::Glacial => Some(Rune::glacial_rune_martial()),
+            Rune::GreaterGlacial => Some(Rune::greater_glacial_rune_martial()),
+            Rune::LesserStorm => Some(Rune::lesser_storm_rune_martial()),
             Rune::Storm => Some(Rune::storm_rune_martial()),
+            Rune::GreaterStorm => Some(Rune::greater_storm_rune_martial()),
+        }
+    }
+
+    pub fn lesser_desert_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Fire,
+            range: Range(4, 6),
         }
     }
 
@@ -289,6 +339,20 @@ impl Rune {
         }
     }
 
+    pub fn greater_desert_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Fire,
+            range: Range(13, 16),
+        }
+    }
+
+    pub fn lesser_glacial_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Cold,
+            range: Range(3, 5),
+        }
+    }
+
     pub fn glacial_rune_martial() -> FlatDamage {
         FlatDamage {
             damage_type: DamageType::Cold,
@@ -296,10 +360,31 @@ impl Rune {
         }
     }
 
+    pub fn greater_glacial_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Cold,
+            range: Range(9, 15),
+        }
+    }
+
+    pub fn lesser_storm_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Lightning,
+            range: Range(1, 10),
+        }
+    }
+
     pub fn storm_rune_martial() -> FlatDamage {
         FlatDamage {
             damage_type: DamageType::Lightning,
             range: Range(1, 20),
+        }
+    }
+
+    pub fn greater_storm_rune_martial() -> FlatDamage {
+        FlatDamage {
+            damage_type: DamageType::Lightning,
+            range: Range(1, 30),
         }
     }
 

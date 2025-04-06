@@ -8,7 +8,20 @@ export const SUPPORTED_ITEM_CLASSES = [
 
 export type ItemClass = (typeof SUPPORTED_ITEM_CLASSES)[number];
 
-export const RUNES_VARIANTS = ['Iron', 'Desert', 'Glacial', 'Storm'] as const;
+export const RUNES_VARIANTS = [
+	'LesserIron',
+	'Iron',
+	'GreaterIron',
+	'LesserDesert',
+	'Desert',
+	'GreaterDesert',
+	'LesserGlacial',
+	'Glacial',
+	'GreaterGlacial',
+	'LesserStorm',
+	'Storm',
+	'GreaterStorm',
+] as const;
 export type Rune = (typeof RUNES_VARIANTS)[number];
 
 export const DAMAGE_TYPES_VARIANTS = ['physical', 'fire', 'cold', 'lightning', 'chaos'];

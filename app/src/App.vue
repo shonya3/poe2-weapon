@@ -1,8 +1,7 @@
 <template>
-	<div class="w-full min-h-lvh bg-stone-50 relative">
-		<CustomTitleBar />
-
-		<main class="px-2">
+	<div class="flex flex-col w-full h-lvh bg-stone-50 relative">
+		<CustomTitleBar class="flex-shrink-0" />
+		<main class="flex-grow overflow-auto">
 			<RouterView />
 		</main>
 
