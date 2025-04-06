@@ -17,5 +17,6 @@ export const SUPPORTED_ITEM_CLASSES = [
 	'Quarterstaves',
 	'Bows',
 	'Crossbows',
+	'Spears',
 ] as const;
 export type ItemClass = (typeof SUPPORTED_ITEM_CLASSES)[number];

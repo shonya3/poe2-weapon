@@ -30,6 +30,7 @@ impl Weapon {
             ItemClass::Quarterstaves => Handed::TwoHanded,
             ItemClass::Bows => Handed::TwoHanded,
             ItemClass::Crossbows => Handed::TwoHanded,
+            ItemClass::Spears => Handed::OneHanded,
         }
     }
 
@@ -346,6 +347,8 @@ pub enum ItemClass {
     Bows,
     #[serde(rename = "Crossbows")]
     Crossbows,
+    #[serde(rename = "Spears")]
+    Spears,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]

@@ -7,7 +7,7 @@ import {
 	type ItemClass,
 } from './weapon.ts';
 
-export const WIKI_WEAPON_TYPES = ['maces', 'quarterstaves', 'bows', 'crossbows'] as const;
+export const WIKI_WEAPON_TYPES = ['maces', 'quarterstaves', 'bows', 'crossbows', 'spears'] as const;
 export type WikiWeaponType = (typeof WIKI_WEAPON_TYPES)[number];
 
 function page_url(weapon_type: WikiWeaponType): string {

@@ -10,12 +10,13 @@ use weapon::{
     Range, Rune, Weapon, WEAPON_STATS,
 };
 
-pub const SUPPORTED_ITEM_CLASSES: [&str; 5] = [
+pub const SUPPORTED_ITEM_CLASSES: [&str; 6] = [
     "One Hand Maces",
     "Two Hand Maces",
     "Quarterstaves",
     "Bows",
     "Crossbows",
+    "Spears",
 ];
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
