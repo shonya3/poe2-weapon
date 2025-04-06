@@ -10,7 +10,20 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-	plugins: [vue(), vue_jsx(), vue_devtools(), tailwindcss()],
+	plugins: [
+		vue({
+			template: {
+				compilerOptions: {
+					isCustomElement: tag => {
+						return tag === 'simple-tooltip';
+					},
+				},
+			},
+		}),
+		vue_jsx(),
+		vue_devtools(),
+		tailwindcss(),
+	],
 
 	define: {
 		'import.meta.env.VERSION': JSON.stringify(version),

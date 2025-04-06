@@ -23,6 +23,8 @@ export const RUNES_VARIANTS = [
 	'GreaterStorm',
 ] as const;
 export type Rune = (typeof RUNES_VARIANTS)[number];
+export const RUNE_TIERS = ['lesser', 'normal', 'greater'] as const;
+export type RuneTier = (typeof RUNE_TIERS)[number];
 
 export const DAMAGE_TYPES_VARIANTS = ['physical', 'fire', 'cold', 'lightning', 'chaos'];
 export type DamageType = (typeof DAMAGE_TYPES_VARIANTS)[number];
