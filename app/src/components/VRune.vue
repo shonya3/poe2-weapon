@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import '../elements/simple-tooltip';
 import { Rune } from '../types';
 const { size = 40, show_runes_names = false } = defineProps<{
 	variant: Rune;
