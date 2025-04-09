@@ -68,7 +68,7 @@ listen<ClipboardFlowData>('clipboard-flow-data', ({ payload }) => {
 });
 
 const close_on_escape = (e: KeyboardEvent) => {
-	if (e.code !== 'Escape') {
+	if (e.code === 'Escape') {
 		WebviewWindow.getCurrent().close();
 	}
 };
