@@ -6,6 +6,7 @@ import VRunesWithDps from '../components/VDpsWithRunes.vue';
 import VWeapon from '../components/VWeapon.vue';
 import { fmt } from '../formatter';
 import { useStorage } from '@vueuse/core';
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 
 const ready = ref(false);
 const not_ready_message = ref<null | 'yes'>(null);
@@ -66,7 +67,15 @@ listen<ClipboardFlowData>('clipboard-flow-data', ({ payload }) => {
 	data.value = payload;
 });
 
+const close_on_escape = (e: KeyboardEvent) => {
+	if (e.code !== 'Escape') {
+		WebviewWindow.getCurrent().close();
+	}
+};
+
 onMounted(() => {
+	window.addEventListener('keydown', close_on_escape);
+
 	setTimeout(() => {
 		if (!ready.value) {
 			not_ready_message.value = 'yes';
