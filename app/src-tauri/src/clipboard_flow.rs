@@ -98,8 +98,10 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
         "TheUniqueLabel",
         tauri::WebviewUrl::App("/clipboard-flow".into()),
     )
+    .title("PoE2 Weapon")
     .always_on_top(true)
-    .decorations(false)
+    .maximizable(false)
+    .minimizable(false)
     .inner_size(400.0, 600.0)
     .on_page_load(move |window, payload| match payload.event() {
         PageLoadEvent::Started => {}

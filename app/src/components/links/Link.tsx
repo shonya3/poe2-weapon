@@ -11,7 +11,7 @@ export const Link = defineComponent<Props>({
 	props: ['kind', 'to', 'onClick'],
 	emits: ['click'],
 	setup(props, { slots }) {
-		const css_class = 'text-sm cf:text-base underline cursor-pointer font-medium text-blue-600 dark:text-blue-500';
+		const css_class = 'text-sm cf:text-base underline cursor-pointer text-blue-600 dark:text-blue-500';
 		return () => {
 			switch (props.kind) {
 				case 'browser': {
