@@ -19,10 +19,12 @@ defineProps<{ weapon: Weapon; img: string; dps: Dps }>();
 					<div>
 						quality: <span class="text-stone-600">{{ weapon.quality }}</span>
 					</div>
-					<div v-if="weapon.runes.length" class="flex items-center -translate-y-1.5">
-						<VRune :size="30" :variant="weapon.runes[0]" />
-						<VRune :size="30" :variant="weapon.runes[1]" />
-					</div>
+
+					<ul class="flex items-center">
+						<li v-for="(rune, i) in weapon.runes">
+							<VRune :size="30" :variant="rune" :key="i" />
+						</li>
+					</ul>
 				</div>
 			</div>
 		</div>
