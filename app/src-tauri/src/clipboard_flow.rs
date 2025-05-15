@@ -202,10 +202,16 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
     match get_window(handle) {
         Some(window) => {
             window.show().unwrap();
+
+            // Set size again - Tauri resizes during the hide-show process for some reason
             window
-                // Set size again - Tauri resizes during the hide-show process for some reason
                 .set_size(Size::Logical(LogicalSize::new(400., 600.)))
                 .unwrap();
+
+            // Set title again - Tauri renames it to Tauri App
+            // during the hide-show process for some reason
+            window.set_title("PoE2 Weapon").unwrap();
+
             data.emit(&window);
             window.set_focus().unwrap();
         }
