@@ -1,6 +1,6 @@
 text: |-
     Phoenix Thirst
-    Advanced Dualstring Bow
+    Twin Bow
     Bow
     Physical Damage: 44-82
     Critical Hit Chance: 5.00%
@@ -14,7 +14,7 @@ text: |-
     63% increased Elemental Damage with Attacks
     12% increased Attack Speed
 expected:
-    base: Advanced Dualstring Bow
+    base: Twin Bow
     item_class: Bows
     explicits:
         flats:

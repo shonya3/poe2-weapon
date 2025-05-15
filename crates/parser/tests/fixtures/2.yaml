@@ -2,7 +2,7 @@ text: |
     Item Class: Bows
     Rarity: Rare
     Woe Fletch
-    Expert Shortbow
+    Ironwood Shortbow
     --------
     Quality: +20% (augmented)
     Physical Damage: 164-291 (augmented)
@@ -26,7 +26,7 @@ text: |
     19% increased Attack Speed
     Grants 4 Life per Enemy Hit
 expected:
-    base: Expert Shortbow
+    base: Ironwood Shortbow
     item_class: Bows
     explicits:
         flats:
