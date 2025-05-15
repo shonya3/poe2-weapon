@@ -40,14 +40,14 @@ pub fn run() {
                                 match clipboard.get_contents() {
                                     Ok(contents) => {
                                         if let Some(window) =
-                                            handle.get_webview_window("TheUniqueLabel")
+                                            handle.get_webview_window("ClipboardFlowWindow")
                                         {
                                             let _ = window.emit("text", contents.clone());
                                             println!("Emitted text");
                                         } else {
                                             tauri::WebviewWindowBuilder::new(
                                                 &handle,
-                                                "TheUniqueLabel",
+                                                "ClipboardFlowWindow",
                                                 tauri::WebviewUrl::App("/".into()),
                                             )
                                             .always_on_top(true)

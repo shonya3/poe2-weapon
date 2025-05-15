@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    App, RunEvent, WindowEvent,
+    App, Manager, RunEvent, WindowEvent,
 };
 
 mod clipboard_flow;
@@ -47,10 +47,19 @@ pub fn run() {
             // Don't let closing windows to dictate, when app should be terminated
             RunEvent::WindowEvent {
                 label,
-                event: WindowEvent::CloseRequested { .. },
+                event: WindowEvent::CloseRequested { api, .. },
                 ..
             } => {
                 println!("{label}: Close window event.");
+
+                // Hide ClipboardFlow window (instead of closing it) for instant startups
+                if label.as_str() == clipboard_flow::WindowLabel.as_str() {
+                    if let Some(window) = clipboard_flow::get_window(app.app_handle()) {
+                        api.prevent_close();
+                        window.hide().unwrap();
+                    }
+                }
+
                 can_exit.store(false, Ordering::SeqCst);
             }
             RunEvent::MenuEvent(menu_event) => {

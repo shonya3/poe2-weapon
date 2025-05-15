@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::{cell::Cell, sync::Mutex};
 use tauri::{
     webview::{PageLoadEvent, PageLoadPayload},
-    AppHandle, Emitter, Listener, Manager, WebviewWindow,
+    AppHandle, Emitter, Listener, LogicalSize, Manager, Size, WebviewWindow,
 };
 use weapon::{Dps, DpsWithRunes, Weapon};
 
@@ -95,7 +95,7 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
 ) -> WebviewWindow {
     let mut builder = tauri::WebviewWindowBuilder::new(
         handle,
-        "TheUniqueLabel",
+        WindowLabel.as_str(),
         tauri::WebviewUrl::App("/clipboard-flow".into()),
     )
     .title("PoE2 Weapon")
@@ -124,7 +124,7 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
 }
 
 pub fn get_window(handle: &AppHandle) -> Option<WebviewWindow> {
-    handle.get_webview_window("TheUniqueLabel")
+    handle.get_webview_window(WindowLabel.as_str())
 }
 
 fn blocking_get_updated_clipboard() -> Result<(String, u128), ClipboardError> {
@@ -200,7 +200,15 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
     *handle.state::<State>().lock().unwrap() = Some(data.clone());
 
     match get_window(handle) {
-        Some(window) => data.emit(&window),
+        Some(window) => {
+            window.show().unwrap();
+            window
+                // Set size again - Tauri resizes during the hide-show process for some reason
+                .set_size(Size::Logical(LogicalSize::new(400., 600.)))
+                .unwrap();
+            data.emit(&window);
+            window.set_focus().unwrap();
+        }
         None => {
             create_window(handle, move |window, _payload| {
                 data.emit(&window);
@@ -214,7 +222,7 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
 pub fn attach_window_listeners(handle: &AppHandle) {
     let window = tauri::WebviewWindowBuilder::new(
         handle,
-        "TheUniqueLabel",
+        WindowLabel.as_str(),
         tauri::WebviewUrl::App("/clipboard-flow".into()),
     )
     .visible(false)
@@ -230,7 +238,8 @@ pub fn attach_window_listeners(handle: &AppHandle) {
             }
         }
     });
-    window.close().unwrap();
+    // window.close().unwrap();
+    window.hide().unwrap();
 }
 
 fn listen_keyboard<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c: T) {
@@ -248,5 +257,20 @@ fn listen_keyboard<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c: 
             ctrl_pressed.set(false);
         }
         _ => {}
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct WindowLabel;
+
+impl WindowLabel {
+    pub fn as_str(&self) -> &'static str {
+        "ClipboardFlowWindow"
+    }
+}
+
+impl std::fmt::Display for WindowLabel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
     }
 }
