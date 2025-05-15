@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { listen, emit } from '@tauri-apps/api/event';
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { ClipboardFlowData, DpsWithRunes, Rune, RUNE_TIERS, RuneTier } from '../types';
 import VRunesWithDps from '../components/VDpsWithRunes.vue';
 import VWeapon from '../components/VWeapon.vue';
@@ -8,9 +8,8 @@ import { fmt } from '../formatter';
 import { useStorage } from '@vueuse/core';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 
-const ready = ref(false);
-const not_ready_message = ref<null | 'yes'>(null);
 const data = ref<ClipboardFlowData | null>(null);
+const ready = computed(() => data.value !== null);
 const apply_quality = ref(true);
 const dps_gain_percents = computed(() => {
 	if (!data.value || !runes_dps.value[0]) {
@@ -39,6 +38,7 @@ function get_tier(rune: Rune): RuneTier {
 	return 'normal';
 }
 
+const should_render_other_runes = ref(false);
 const runes_dps = computed<DpsWithRunes[]>(() => {
 	if (!data.value) {
 		return [];
@@ -62,34 +62,47 @@ const runes_dps = computed<DpsWithRunes[]>(() => {
 	return data.value.weapon.dps_with_different_runes.filter(filter_exluded_tiers);
 });
 
+let logging_on = true;
+const start = new Date();
+const log = (...args: any[]) => {
+	if (!logging_on) {
+		return;
+	}
+	console.log(`[${Date.now() - start.getTime()}ms]`.padEnd(10), ...args);
+};
+
 listen<ClipboardFlowData>('clipboard-flow-data', ({ payload }) => {
-	ready.value = true;
 	data.value = payload;
+	log('Event:clipboard-flow-data');
 });
 
-const close_on_escape = (e: KeyboardEvent) => {
+window.addEventListener('keydown', (e: KeyboardEvent) => {
 	if (e.code === 'Escape') {
 		WebviewWindow.getCurrent().close();
 	}
-};
-
-onMounted(() => {
-	window.addEventListener('keydown', close_on_escape);
-
-	setTimeout(() => {
-		if (!ready.value) {
-			not_ready_message.value = 'yes';
-			emit('clipboard-flow-ask-resend');
-		}
-	}, 100);
 });
+
+// Ask to resend data if needed
+let asked = false;
+const ask_resend_data = () => {
+	log('interval');
+	if (ready.value) {
+		clearInterval(interval_resend);
+		log('Clear interval_resend');
+	} else if (!asked) {
+		asked = true;
+		emit('clipboard-flow-ask-resend');
+		log('Emit:clipboard-flow-ask-resend');
+	}
+};
+ask_resend_data();
+const interval_resend = setInterval(ask_resend_data, 1);
 </script>
 
 <template>
 	<div v-if="!data">
-		<!-- <p>Data is not ready</p>
-		<pre>Asked for data resend: {{ not_ready_message ?? 'NOT SENT' }}</pre> -->
-		Loading...
+		<!--  <p>Data is not ready</p> -->
+		<!-- Loading... -->
 	</div>
 	<div v-else class="px-2">
 		<VWeapon :img="data.img" :weapon="data.weapon.weapon" :dps="data.weapon.dps" />
@@ -143,9 +156,9 @@ onMounted(() => {
 			</div>
 		</div>
 
-		<details class="text-stone-600 pt-8">
-			<summary>Other runes</summary>
-			<ul class="flex flex-wrap gap-x-10 pt-3">
+		<details v-if="runes_dps.length > 1" class="text-stone-600 pt-8">
+			<summary @click="should_render_other_runes = true">Other runes</summary>
+			<ul v-if="should_render_other_runes" class="flex flex-wrap gap-x-10 pt-3">
 				<li
 					class="basis-[120px]"
 					:key="runes_with_dps.runes.join('')"
