@@ -7,7 +7,7 @@ use bases::BASES;
 use serde::{Deserialize, Serialize};
 use weapon::{
     AttackSpeedModifier, DamageType, Explicits, FlatDamage, ItemClass, PhysModifier, Quality,
-    Range, Rune, Weapon, WEAPON_STATS,
+    Range, Rune, RuneMartialBonus, Weapon, WEAPON_STATS,
 };
 
 pub const SUPPORTED_ITEM_CLASSES: [&str; 6] = [
@@ -185,32 +185,101 @@ pub fn parse(text: &str) -> Result<Parsed, ParseError> {
 }
 
 fn try_parse_rune(line: &str) -> Option<Vec<Rune>> {
-    let line = line.trim();
-    if !line.ends_with("(rune)") {
+    let original_line = line.trim();
+    if !original_line.ends_with("(rune)") {
         return None;
     }
-    let line = line.replace("(rune)", "");
-    let line = line.trim();
+    let mod_line = original_line.replace("(rune)", "").trim().to_string();
 
-    if let Some(phys) = try_parse_phys_modifier(line) {
-        let length = (phys.0 as f32 / Rune::iron_rune_martial().0 as f32).ceil() as usize;
-        return Some(vec![Rune::Iron; length]);
+    // Attempt to parse as Physical Damage Modifier
+    if let Some(parsed_phys_mod) = try_parse_phys_modifier(&mod_line) {
+        let phys_val = parsed_phys_mod.0;
+
+        let greater_iron_val = Rune::greater_iron_rune_martial().0;
+        let iron_val = Rune::iron_rune_martial().0;
+        let lesser_iron_val = Rune::lesser_iron_rune_martial().0;
+
+        if greater_iron_val > 0 && phys_val % greater_iron_val == 0 {
+            let count = (phys_val / greater_iron_val) as usize;
+            if count > 0 {
+                return Some(vec![Rune::GreaterIron; count]);
+            }
+        }
+        if iron_val > 0 && phys_val % iron_val == 0 {
+            let count = (phys_val / iron_val) as usize;
+            if count > 0 {
+                return Some(vec![Rune::Iron; count]);
+            }
+        }
+        if lesser_iron_val > 0 && phys_val % lesser_iron_val == 0 {
+            let count = (phys_val / lesser_iron_val) as usize;
+            if count > 0 {
+                return Some(vec![Rune::LesserIron; count]);
+            }
+        }
+
+        return None;
+
+    // Attempt to parse as Flat Damage Modifier
+    } else if let Some(parsed_flat_mod) = try_parse_flat_damage(&mod_line) {
+        // Define the base rune tiers and their corresponding enum variants.
+        // Order might matter if there's ambiguity, typically checking larger base runes first for multiples.
+        let candidate_rune_tiers = [
+            (Rune::greater_desert_rune_martial(), Rune::GreaterDesert),
+            (Rune::desert_rune_martial(), Rune::Desert),
+            (Rune::lesser_desert_rune_martial(), Rune::LesserDesert),
+            (Rune::greater_glacial_rune_martial(), Rune::GreaterGlacial),
+            (Rune::glacial_rune_martial(), Rune::Glacial),
+            (Rune::lesser_glacial_rune_martial(), Rune::LesserGlacial),
+            (Rune::greater_storm_rune_martial(), Rune::GreaterStorm),
+            (Rune::storm_rune_martial(), Rune::Storm),
+            (Rune::lesser_storm_rune_martial(), Rune::LesserStorm),
+        ];
+
+        // Stage 1: Try for an exact single rune match
+        for (tier_stats, rune_variant) in &candidate_rune_tiers {
+            if tier_stats.damage_type == parsed_flat_mod.damage_type
+                && tier_stats.range == parsed_flat_mod.range
+            {
+                return Some(vec![*rune_variant]); // Exact match for one rune
+            }
+        }
+
+        // Stage 2: If no exact single rune match, try to parse as multiples of a base rune tier
+        // We iterate in the same order (Greater, Normal, Lesser for each element type)
+        // to give precedence to multiples of larger runes if ambiguity were possible.
+        for (tier_stats, rune_variant) in &candidate_rune_tiers {
+            if tier_stats.damage_type == parsed_flat_mod.damage_type {
+                let tier_min = tier_stats.range.0;
+                let tier_max = tier_stats.range.1;
+                let parsed_min = parsed_flat_mod.range.0;
+                let parsed_max = parsed_flat_mod.range.1;
+
+                // Ensure the base tier rune has valid damage values to avoid division by zero or logical errors.
+                if tier_min > 0 && tier_max > 0 {
+                    // Min damage typically > 0 for elemental runes
+                    if parsed_min % tier_min == 0 && parsed_max % tier_max == 0 {
+                        let count_from_min = parsed_min / tier_min;
+                        let count_from_max = parsed_max / tier_max;
+
+                        // Both min and max damage must scale by the same factor, and that factor must be greater than 0.
+                        if count_from_min == count_from_max && count_from_min > 0 {
+                            // If count is 1, it should have been caught by the exact match (Stage 1).
+                            // This block is for actual multiples (count > 1).
+                            if count_from_min > 0 {
+                                // count_from_min == 1 should be caught by Stage 1
+                                return Some(vec![*rune_variant; count_from_min as usize]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return None; // No matching elemental rune tier or multiple found
     }
 
-    if let Some(flat) = try_parse_flat_damage(line) {
-        let (rune, max) = match flat.damage_type {
-            DamageType::Physical => panic!("Never happens: No rune with flat phys"),
-            DamageType::Fire => (Rune::Desert, Rune::desert_rune_martial().range.1),
-            DamageType::Cold => (Rune::Glacial, Rune::glacial_rune_martial().range.1),
-            DamageType::Lightning => (Rune::Storm, Rune::storm_rune_martial().range.1),
-            DamageType::Chaos => panic!("Never happens: No rune with flat chaos"),
-        };
-
-        let length = (flat.range.1 as f32 / max as f32).ceil() as usize;
-        return Some(vec![rune; length]);
-    }
-
-    None
+    None // Line is not a recognized rune modifier
 }
 
 /// Try find Adds 7 to 16 Fire Damage

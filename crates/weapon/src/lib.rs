@@ -293,9 +293,9 @@ impl Rune {
 
     pub fn martial(&self) -> RuneMartialBonus {
         match self {
-            Rune::LesserIron => RuneMartialBonus::Phys(PhysModifier(15)),
-            Rune::Iron => RuneMartialBonus::Phys(PhysModifier(20)),
-            Rune::GreaterIron => RuneMartialBonus::Phys(PhysModifier(25)),
+            Rune::LesserIron => RuneMartialBonus::Phys(Rune::lesser_iron_rune_martial()),
+            Rune::Iron => RuneMartialBonus::Phys(Rune::iron_rune_martial()),
+            Rune::GreaterIron => RuneMartialBonus::Phys(Rune::greater_iron_rune_martial()),
             Rune::LesserDesert => RuneMartialBonus::Flat(Rune::lesser_desert_rune_martial()),
             Rune::Desert => RuneMartialBonus::Flat(Rune::desert_rune_martial()),
             Rune::GreaterDesert => RuneMartialBonus::Flat(Rune::greater_desert_rune_martial()),
@@ -388,8 +388,16 @@ impl Rune {
         }
     }
 
+    pub fn lesser_iron_rune_martial() -> PhysModifier {
+        PhysModifier(15)
+    }
+
     pub fn iron_rune_martial() -> PhysModifier {
         PhysModifier(20)
+    }
+
+    pub fn greater_iron_rune_martial() -> PhysModifier {
+        PhysModifier(25)
     }
 }
 
