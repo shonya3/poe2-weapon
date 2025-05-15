@@ -53,7 +53,7 @@ pub fn run() {
                 println!("{label}: Close window event.");
 
                 // Hide ClipboardFlow window (instead of closing it) for instant startups
-                if label.as_str() == clipboard_flow::WindowLabel.as_str() {
+                if label.as_str() == clipboard_flow::WINDOW_LABEL {
                     if let Some(window) = clipboard_flow::get_window(app.app_handle()) {
                         api.prevent_close();
                         window.hide().unwrap();

@@ -5,9 +5,14 @@ use serde::{Deserialize, Serialize};
 use std::{cell::Cell, sync::Mutex};
 use tauri::{
     webview::{PageLoadEvent, PageLoadPayload},
-    AppHandle, Emitter, Listener, LogicalSize, Manager, Size, WebviewWindow,
+    AppHandle, Emitter, Listener, LogicalSize, Manager, WebviewWindow,
 };
 use weapon::{Dps, DpsWithRunes, Weapon};
+
+pub const WINDOW_LABEL: &str = "ClipboardFlowWindow";
+pub const WINDOW_TITLE: &str = "PoE2 Weapon";
+pub const WINDOW_WIDTH: f64 = 400.;
+pub const WINDOW_HEIGHT: f64 = 600.;
 
 pub type State = Mutex<Option<Data>>;
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -95,14 +100,14 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
 ) -> WebviewWindow {
     let mut builder = tauri::WebviewWindowBuilder::new(
         handle,
-        WindowLabel.as_str(),
+        WINDOW_LABEL,
         tauri::WebviewUrl::App("/clipboard-flow".into()),
     )
-    .title("PoE2 Weapon")
+    .title(WINDOW_TITLE)
     .always_on_top(true)
     .maximizable(false)
     .minimizable(false)
-    .inner_size(400.0, 600.0)
+    .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
     .on_page_load(move |window, payload| match payload.event() {
         PageLoadEvent::Started => {}
         PageLoadEvent::Finished => {
@@ -124,7 +129,7 @@ pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + '
 }
 
 pub fn get_window(handle: &AppHandle) -> Option<WebviewWindow> {
-    handle.get_webview_window(WindowLabel.as_str())
+    handle.get_webview_window(WINDOW_LABEL)
 }
 
 fn blocking_get_updated_clipboard() -> Result<(String, u128), ClipboardError> {
@@ -205,12 +210,12 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
 
             // Set size again - Tauri resizes during the hide-show process for some reason
             window
-                .set_size(Size::Logical(LogicalSize::new(400., 600.)))
+                .set_size(LogicalSize::new(WINDOW_WIDTH, WINDOW_HEIGHT))
                 .unwrap();
 
             // Set title again - Tauri renames it to Tauri App
             // during the hide-show process for some reason
-            window.set_title("PoE2 Weapon").unwrap();
+            window.set_title(WINDOW_TITLE).unwrap();
 
             data.emit(&window);
             window.set_focus().unwrap();
@@ -228,7 +233,7 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
 pub fn attach_window_listeners(handle: &AppHandle) {
     let window = tauri::WebviewWindowBuilder::new(
         handle,
-        WindowLabel.as_str(),
+        WINDOW_LABEL,
         tauri::WebviewUrl::App("/clipboard-flow".into()),
     )
     .visible(false)
@@ -263,20 +268,5 @@ fn listen_keyboard<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c: 
             ctrl_pressed.set(false);
         }
         _ => {}
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WindowLabel;
-
-impl WindowLabel {
-    pub fn as_str(&self) -> &'static str {
-        "ClipboardFlowWindow"
-    }
-}
-
-impl std::fmt::Display for WindowLabel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str(self.as_str())
     }
 }
