@@ -3,10 +3,7 @@ use enigo::{Enigo, Mouse, Settings as EnigoSettings};
 use rdev::{Event, EventType, Key};
 use serde::{Deserialize, Serialize};
 use std::{cell::Cell, sync::Mutex};
-use tauri::{
-    webview::{PageLoadEvent, PageLoadPayload},
-    AppHandle, Emitter, Listener, LogicalSize, Manager, WebviewWindow,
-};
+use tauri::{AppHandle, Emitter, Listener, LogicalPosition, Manager, WebviewWindow};
 use weapon::{Dps, DpsWithRunes, Weapon};
 
 pub const WINDOW_LABEL: &str = "ClipboardFlowWindow";
@@ -94,38 +91,20 @@ fn get_mouse_position() -> Result<(i32, i32), GetMousePositionError> {
     Ok(location)
 }
 
-pub fn create_window<T: Fn(WebviewWindow, PageLoadPayload<'_>) + Send + Sync + 'static>(
-    handle: &AppHandle,
-    on_page_load_finished: T,
-) -> WebviewWindow {
-    let mut builder = tauri::WebviewWindowBuilder::new(
+pub fn create_window(handle: &AppHandle) -> WebviewWindow {
+    tauri::WebviewWindowBuilder::new(
         handle,
         WINDOW_LABEL,
         tauri::WebviewUrl::App("/clipboard-flow".into()),
     )
     .title(WINDOW_TITLE)
     .always_on_top(true)
+    .visible(false)
     .maximizable(false)
     .minimizable(false)
     .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
-    .on_page_load(move |window, payload| match payload.event() {
-        PageLoadEvent::Started => {}
-        PageLoadEvent::Finished => {
-            println!("{} finished loading", payload.url());
-            on_page_load_finished(window, payload);
-        }
-    });
-
-    if let Ok(pos) = get_mouse_position() {
-        let x = match pos.0 > 400 {
-            true => pos.0 - 200,
-            false => 0,
-        };
-        let y = pos.1 + 80;
-        builder = builder.position(x as f64, y as f64);
-    }
-
-    builder.build().unwrap()
+    .build()
+    .unwrap()
 }
 
 pub fn get_window(handle: &AppHandle) -> Option<WebviewWindow> {
@@ -204,41 +183,29 @@ pub fn handle_ctrl_c(handle: &AppHandle) -> Result<(), Error> {
 
     *handle.state::<State>().lock().unwrap() = Some(data.clone());
 
-    match get_window(handle) {
-        Some(window) => {
-            window.show().unwrap();
+    let window = get_window(handle).unwrap_or_else(|| create_window(handle));
 
-            // Set size again - Tauri resizes during the hide-show process for some reason
-            window
-                .set_size(LogicalSize::new(WINDOW_WIDTH, WINDOW_HEIGHT))
-                .unwrap();
+    if let Ok(pos) = get_mouse_position() {
+        let x = match pos.0 > 400 {
+            true => pos.0 - 200,
+            false => 0,
+        };
+        let y = pos.1 + 80;
 
-            // Set title again - Tauri renames it to Tauri App
-            // during the hide-show process for some reason
-            window.set_title(WINDOW_TITLE).unwrap();
-
-            data.emit(&window);
-            window.set_focus().unwrap();
-        }
-        None => {
-            create_window(handle, move |window, _payload| {
-                data.emit(&window);
-            });
-        }
+        window
+            .set_position(LogicalPosition::new(x as f64, y as f64))
+            .unwrap();
     }
+
+    data.emit(&window);
+    window.show().unwrap();
+    window.set_focus().unwrap();
 
     Ok(())
 }
 
 pub fn attach_window_listeners(handle: &AppHandle) {
-    let window = tauri::WebviewWindowBuilder::new(
-        handle,
-        WINDOW_LABEL,
-        tauri::WebviewUrl::App("/clipboard-flow".into()),
-    )
-    .visible(false)
-    .build()
-    .unwrap();
+    let window = create_window(handle);
 
     let handle = handle.clone();
     window.listen("clipboard-flow-ask-resend", move |_| {
@@ -249,8 +216,6 @@ pub fn attach_window_listeners(handle: &AppHandle) {
             }
         }
     });
-    // window.close().unwrap();
-    window.hide().unwrap();
 }
 
 fn listen_keyboard<T: Fn()>(event: Event, ctrl_pressed: &Cell<bool>, on_ctrl_c: T) {
