@@ -131,6 +131,11 @@ const interval_resend = setInterval(ask_resend_data, 1);
 					+{{ fmt((runes_dps[0].dps.total / data.weapon.dps.total) * 100 - 100) }}%
 				</div></template
 			>
+			<template v-else-if="dps_gain_percents < 0" v-slot:right
+				><div class="text-red-600 text-3xl pl-1">
+					{{ fmt((runes_dps[0].dps.total / data.weapon.dps.total) * 100 - 100) }}%
+				</div></template
+			>
 		</VRunesWithDps>
 
 		<div class="mt-4">
