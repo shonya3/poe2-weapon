@@ -52,7 +52,7 @@ pub fn listen_global_ctrl_c(handle: AppHandle) {
     });
 
     if let Err(error) = result {
-        println!("Error: {:?}", error)
+        println!("Error: {error:?}")
     };
 }
 
