@@ -389,15 +389,15 @@ impl Rune {
     }
 
     pub fn lesser_iron_rune_martial() -> PhysModifier {
-        PhysModifier(15)
+        PhysModifier(14)
     }
 
     pub fn iron_rune_martial() -> PhysModifier {
-        PhysModifier(20)
+        PhysModifier(16)
     }
 
     pub fn greater_iron_rune_martial() -> PhysModifier {
-        PhysModifier(25)
+        PhysModifier(18)
     }
 }
 
