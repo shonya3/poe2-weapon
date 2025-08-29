@@ -27,7 +27,7 @@ export async function scrap_page(weapon_type: WikiWeaponType, page: Page): Promi
 			function parse_first_td(td: HTMLTableCellElement): { title: string; img: string } {
 				const hoverbox_activator = td.querySelector('span.c-item-hoverbox__activator')!;
 				const title = hoverbox_activator.querySelector('a')!.textContent!;
-				const src = hoverbox_activator.querySelector('img')!.getAttribute('src')!;
+				const src = hoverbox_activator.querySelector('img')?.getAttribute('src') ?? '';
 				return {
 					title,
 					img: `https://www.poe2wiki.net/${src}`,

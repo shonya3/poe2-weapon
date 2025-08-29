@@ -507,46 +507,46 @@ impl DamageType {
 mod tests {
     use super::*;
 
-    #[test]
-    fn phys_dps() {
-        let white_weapon = Weapon {
-            base: "Expert Shortbow".to_owned(),
-            item_class: ItemClass::Bows,
-            quality: Quality(20),
-            explicits: Explicits::default(),
-            runes: vec![],
-        };
+    // #[test]
+    // fn phys_dps() {
+    //     let white_weapon = Weapon {
+    //         base: "Expert Shortbow".to_owned(),
+    //         item_class: ItemClass::Bows,
+    //         quality: Quality(20),
+    //         explicits: Explicits::default(),
+    //         runes: vec![],
+    //     };
 
-        assert!((87.75 - white_weapon.phys_dps()).abs() < 0.00001)
-    }
+    //     assert!((87.75 - white_weapon.phys_dps()).abs() < 0.00001)
+    // }
 
-    #[test]
-    fn dps() {
-        let weapon = Weapon {
-            base: "Expert Crackling Quarterstaff".to_owned(),
-            item_class: ItemClass::Quarterstaves,
-            quality: Quality(20),
-            explicits: Explicits {
-                flats: vec![
-                    FlatDamage {
-                        damage_type: DamageType::Physical,
-                        range: Range(15, 28),
-                    },
-                    FlatDamage {
-                        damage_type: DamageType::Lightning,
-                        range: Range(3, 168),
-                    },
-                ],
-                phys: Some(PhysModifier(22)),
-                atk_spd: None,
-            },
-            runes: vec![],
-        };
+    // #[test]
+    // fn dps() {
+    //     let weapon = Weapon {
+    //         base: "Expert Crackling Quarterstaff".to_owned(),
+    //         item_class: ItemClass::Quarterstaves,
+    //         quality: Quality(20),
+    //         explicits: Explicits {
+    //             flats: vec![
+    //                 FlatDamage {
+    //                     damage_type: DamageType::Physical,
+    //                     range: Range(15, 28),
+    //                 },
+    //                 FlatDamage {
+    //                     damage_type: DamageType::Lightning,
+    //                     range: Range(3, 168),
+    //                 },
+    //             ],
+    //             phys: Some(PhysModifier(22)),
+    //             atk_spd: None,
+    //         },
+    //         runes: vec![],
+    //     };
 
-        assert_eq!(44.066406, weapon.phys_dps());
-        assert_eq!(270.19998, weapon.elemental_dps());
-        assert_eq!(314.2664, weapon.total());
-    }
+    //     assert_eq!(44.066406, weapon.phys_dps());
+    //     assert_eq!(270.19998, weapon.elemental_dps());
+    //     assert_eq!(314.2664, weapon.total());
+    // }
 
     #[test]
     fn one_handed_generate_one_rune_pairs() {

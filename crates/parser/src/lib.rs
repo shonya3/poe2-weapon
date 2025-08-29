@@ -426,7 +426,7 @@ mod tests {
     fn try_parse_rune() {
         assert_eq!(
             Some(vec![Rune::Iron, Rune::Iron]),
-            super::try_parse_rune("40% increased Physical Damage (rune)")
+            super::try_parse_rune("32% increased Physical Damage (rune)")
         )
     }
 }
