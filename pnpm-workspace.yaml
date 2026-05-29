@@ -1,3 +1,5 @@
 packages:
-    # all packages in direct subdirs of packages/
-    - 'app'
+  # all packages in direct subdirs of packages/
+  - 'app'
+allowBuilds:
+  esbuild: true

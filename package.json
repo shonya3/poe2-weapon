@@ -1,8 +1,9 @@
 {
-	"scripts": {
-		"scrape": "node scrape/src/main.ts",
-		"app:dev": "cd app && pnpm tauri dev",
-		"build": "cd app && pnpm build",
-		"bump": "node bump/src/main.ts"
-	}
+  "scripts": {
+    "scrape": "node scrape/src/main.ts",
+    "app:dev": "cd app && pnpm tauri dev",
+    "build": "cd app && pnpm build",
+    "bump": "node bump/src/main.ts"
+  },
+  "packageManager": "pnpm@11.4.0"
 }

@@ -119,9 +119,9 @@ export async function scrap_page(weapon_type: WikiWeaponType, page: Page): Promi
 						const indexes = column_indexes(table);
 						return Array.from(table.querySelector('tbody')!.querySelectorAll('tr')).map(tr => {
 							const cells = tr.querySelectorAll('td');
-							const { title, img } = parse_first_td(cells[0]);
-							const aps = Number(cells[indexes.attacks_per_second].textContent);
-							const damages = parse_damage_td(cells[indexes.damage]);
+							const { title, img } = parse_first_td(cells[0]!);
+							const aps = Number(cells[indexes.attacks_per_second]!.textContent);
+							const damages = parse_damage_td(cells[indexes.damage]!);
 
 							return {
 								base: title,
