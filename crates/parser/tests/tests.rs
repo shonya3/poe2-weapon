@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use weapon::{
     AttackSpeedModifier, DamageType, Explicits, FlatDamage, PhysModifier, Quality, Range, Rune,
 };
+use weapon::{ItemClass, Weapon};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Fixture {
@@ -25,6 +26,64 @@ pub fn print_yaml(fixture: &Fixture) {
 
 #[test]
 fn parser() {
+    let weapon = Parsed {
+        base: "Cinderbark Talisman".to_string(),
+        item_class: ItemClass::Talismans,
+        quality: Quality(0),
+        explicits: Explicits {
+            flats: vec![
+                FlatDamage {
+                    damage_type: DamageType::Fire,
+                    range: Range(9, 16),
+                },
+                FlatDamage {
+                    damage_type: DamageType::Cold,
+                    range: Range(8, 14),
+                },
+            ],
+            phys: Some(PhysModifier(54)),
+            atk_spd: None,
+        },
+        runes: vec![Rune::LesserGlacial],
+    };
+
+    let fixture = Fixture {
+        text: "Item Class: Talismans
+Rarity: Rare
+Kraken Cloak
+Cinderbark Talisman
+--------
+Physical Damage: 18-39 (augmented)
+Elemental Damage: 14-26 (fire), 11-19 (cold)
+Critical Hit Chance: 8.00%
+Attacks per Second: 1.20
+--------
+Requires: Level 10, 15 Str, 11 Int
+--------
+Sockets: S 
+--------
+Item Level: 11
+--------
+Adds 3 to 5 Cold Damage (rune)
+--------
+59% increased Flammability Magnitude (implicit)
+--------
+54% increased Physical Damage
+Adds 9 to 16 Fire Damage
+Adds 8 to 14 Cold Damage
++7 to Intelligence
+12% increased Stun Duration
+"
+        .to_string(),
+        expected: weapon,
+    };
+
+    std::fs::write(
+        "tests/fixtures/basic_talisman.yaml",
+        serde_yaml::to_string(&fixture).unwrap(),
+    )
+    .unwrap();
+
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let fixtures_dir = Path::new(&manifest_dir).join("tests").join("fixtures");
 

@@ -31,6 +31,7 @@ impl Weapon {
             ItemClass::Bows => Handed::TwoHanded,
             ItemClass::Crossbows => Handed::TwoHanded,
             ItemClass::Spears => Handed::OneHanded,
+            ItemClass::Talismans => Handed::TwoHanded,
         }
     }
 
@@ -442,6 +443,8 @@ pub enum ItemClass {
     Crossbows,
     #[serde(rename = "Spears")]
     Spears,
+    #[serde(rename = "Talismans")]
+    Talismans,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
@@ -587,9 +590,9 @@ mod tests {
             runes: vec![],
         };
 
-        assert_eq!(97.2, one_fr_f32(cultist_bow.dps().total));
-        assert_eq!(97.2, one_fr_f32(cultist_bow.total()));
-        assert_eq!(57.0, one_fr_f32(cultist_bow.chaos_dps()));
+        assert_eq!(97.6, one_fr_f32(cultist_bow.dps().total));
+        assert_eq!(97.6, one_fr_f32(cultist_bow.total()));
+        assert_eq!(15.6, one_fr_f32(cultist_bow.chaos_dps()));
         assert_eq!(40.2, one_fr_f32(cultist_bow.elemental_dps()));
     }
 }
