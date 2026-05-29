@@ -32,51 +32,42 @@ pub fn run() {
                         EventType::KeyPress(Key::ControlLeft) => {
                             ctrl_pressed.set(true);
                         }
-                        EventType::KeyPress(Key::KeyC) => {
-                            if ctrl_pressed.get() {
-                                std::thread::sleep(Duration::from_millis(400));
+                        EventType::KeyPress(Key::KeyC) if ctrl_pressed.get() => {
+                            std::thread::sleep(Duration::from_millis(400));
 
-                                let mut clipboard = ClipboardContext::new().unwrap();
-                                match clipboard.get_contents() {
-                                    Ok(contents) => {
-                                        if let Some(window) =
-                                            handle.get_webview_window("ClipboardFlowWindow")
-                                        {
-                                            let _ = window.emit("text", contents.clone());
-                                            println!("Emitted text");
-                                        } else {
-                                            tauri::WebviewWindowBuilder::new(
-                                                &handle,
-                                                "ClipboardFlowWindow",
-                                                tauri::WebviewUrl::App("/".into()),
-                                            )
-                                            .always_on_top(true)
-                                            .on_page_load(move |window, payload| {
-                                                window.open_devtools();
-                                                match payload.event() {
-                                                    PageLoadEvent::Started => {
-                                                        println!(
-                                                            "{} finished loading",
-                                                            payload.url()
-                                                        );
-                                                    }
-                                                    PageLoadEvent::Finished => {
-                                                        println!(
-                                                            "{} finished loading",
-                                                            payload.url()
-                                                        );
-                                                        let _ =
-                                                            window.emit("text", contents.clone());
-                                                        println!("Emitted text");
-                                                    }
+                            let mut clipboard = ClipboardContext::new().unwrap();
+                            match clipboard.get_contents() {
+                                Ok(contents) => {
+                                    if let Some(window) =
+                                        handle.get_webview_window("ClipboardFlowWindow")
+                                    {
+                                        let _ = window.emit("text", contents.clone());
+                                        println!("Emitted text");
+                                    } else {
+                                        tauri::WebviewWindowBuilder::new(
+                                            &handle,
+                                            "ClipboardFlowWindow",
+                                            tauri::WebviewUrl::App("/".into()),
+                                        )
+                                        .always_on_top(true)
+                                        .on_page_load(move |window, payload| {
+                                            window.open_devtools();
+                                            match payload.event() {
+                                                PageLoadEvent::Started => {
+                                                    println!("{} finished loading", payload.url());
                                                 }
-                                            })
-                                            .build()
-                                            .unwrap();
-                                        }
+                                                PageLoadEvent::Finished => {
+                                                    println!("{} finished loading", payload.url());
+                                                    let _ = window.emit("text", contents.clone());
+                                                    println!("Emitted text");
+                                                }
+                                            }
+                                        })
+                                        .build()
+                                        .unwrap();
                                     }
-                                    Err(err) => eprintln!("{err}"),
                                 }
+                                Err(err) => eprintln!("{err}"),
                             }
                         }
                         EventType::KeyRelease(Key::ControlLeft) => {

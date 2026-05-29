@@ -2,7 +2,6 @@
 
 use dioxus::prelude::*;
 use futures_util::StreamExt;
-use serde::{Deserialize, Serialize};
 use tauri_wasm::api::event::listen;
 use wasm_bindgen::prelude::*;
 
@@ -11,11 +10,6 @@ extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
     async fn invoke(cmd: &str, args: JsValue) -> JsValue;
 
-}
-
-#[derive(Serialize, Deserialize)]
-struct GreetArgs<'a> {
-    name: &'a str,
 }
 
 pub fn App() -> Element {
@@ -44,10 +38,10 @@ pub fn App() -> Element {
     });
 
     rsx! {
-    pre { "{text}" }
+      pre { "{text}" }
 
-            pre {"{parsed.read():?}"}
+      pre { "{parsed.read():?}" }
 
-            pre { "{runes():#?}" }
-        }
+      pre { "{runes():#?}" }
+    }
 }

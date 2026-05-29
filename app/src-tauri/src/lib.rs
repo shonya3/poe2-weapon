@@ -36,13 +36,12 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(move |app, event| match event {
-            RunEvent::ExitRequested { api, .. } => {
+            RunEvent::ExitRequested { api, .. }
                 if can_exit
                     .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-                    .is_ok()
-                {
-                    api.prevent_exit();
-                }
+                    .is_ok() =>
+            {
+                api.prevent_exit();
             }
             // Don't let closing windows to dictate, when app should be terminated
             RunEvent::WindowEvent {
@@ -62,12 +61,10 @@ pub fn run() {
 
                 can_exit.store(false, Ordering::SeqCst);
             }
-            RunEvent::MenuEvent(menu_event) => {
-                if menu_event.id().as_ref() == "exit" {
-                    can_exit.store(true, Ordering::SeqCst);
-                    app.exit(0);
-                    println!("Exit menu item was clicked");
-                };
+            RunEvent::MenuEvent(menu_event) if menu_event.id().as_ref() == "exit" => {
+                can_exit.store(true, Ordering::SeqCst);
+                app.exit(0);
+                println!("Exit menu item was clicked");
             }
             _ => {}
         });
