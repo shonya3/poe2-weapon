@@ -1,0 +1,19 @@
+{
+  "base": "Twin Bow",
+  "explicits": {
+    "atk_spd": 12,
+    "flats": [
+      {
+        "damage_type": "physical",
+        "range": [
+          2,
+          4
+        ]
+      }
+    ],
+    "phys": 42
+  },
+  "item_class": "Bows",
+  "quality": 0,
+  "runes": []
+}

@@ -1,0 +1,22 @@
+{
+  "base": "Ironwood Shortbow",
+  "explicits": {
+    "atk_spd": 19,
+    "flats": [
+      {
+        "damage_type": "physical",
+        "range": [
+          12,
+          18
+        ]
+      }
+    ],
+    "phys": 118
+  },
+  "item_class": "Bows",
+  "quality": 20,
+  "runes": [
+    "Iron",
+    "Iron"
+  ]
+}

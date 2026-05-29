@@ -1,0 +1,28 @@
+{
+  "base": "Cinderbark Talisman",
+  "explicits": {
+    "atk_spd": null,
+    "flats": [
+      {
+        "damage_type": "fire",
+        "range": [
+          9,
+          16
+        ]
+      },
+      {
+        "damage_type": "cold",
+        "range": [
+          8,
+          14
+        ]
+      }
+    ],
+    "phys": 54
+  },
+  "item_class": "Talismans",
+  "quality": 0,
+  "runes": [
+    "LesserGlacial"
+  ]
+}

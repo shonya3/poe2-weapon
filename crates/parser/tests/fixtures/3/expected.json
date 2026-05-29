@@ -1,0 +1,14 @@
+{
+  "base": "Recurve Bow",
+  "explicits": {
+    "atk_spd": null,
+    "flats": [],
+    "phys": 71
+  },
+  "item_class": "Bows",
+  "quality": 20,
+  "runes": [
+    "Iron",
+    "Desert"
+  ]
+}

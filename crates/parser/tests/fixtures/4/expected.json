@@ -1,0 +1,19 @@
+{
+  "base": "Crackling Quarterstaff",
+  "explicits": {
+    "atk_spd": null,
+    "flats": [
+      {
+        "damage_type": "fire",
+        "range": [
+          18,
+          37
+        ]
+      }
+    ],
+    "phys": null
+  },
+  "item_class": "Quarterstaves",
+  "quality": 0,
+  "runes": []
+}

@@ -1,0 +1,28 @@
+{
+  "base": "Bandit Mace",
+  "explicits": {
+    "atk_spd": 13,
+    "flats": [
+      {
+        "damage_type": "physical",
+        "range": [
+          22,
+          28
+        ]
+      },
+      {
+        "damage_type": "lightning",
+        "range": [
+          1,
+          6
+        ]
+      }
+    ],
+    "phys": 143
+  },
+  "item_class": "One Hand Maces",
+  "quality": 20,
+  "runes": [
+    "GreaterIron"
+  ]
+}

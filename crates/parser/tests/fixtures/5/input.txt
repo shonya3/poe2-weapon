@@ -1,0 +1,25 @@
+Item Class: One Hand Maces
+Rarity: Rare
+Torment Blow
+Bandit Mace
+--------
+Quality: +20% (augmented)
+Physical Damage: 215-286 (augmented)
+Lightning Damage: 1-6 (lightning)
+Critical Hit Chance: 5.00%
+Attacks per Second: 1.64 (augmented)
+--------
+Requires: Level 59, 114 (augmented) Str
+--------
+Sockets: S 
+--------
+Item Level: 66
+--------
+18% increased Physical Damage (rune)
+--------
+143% increased Physical Damage
+Adds 22 to 28 Physical Damage
+Adds 1 to 6 Lightning Damage
++13% to Critical Damage Bonus
+13% increased Attack Speed
+15% reduced Attribute Requirements
